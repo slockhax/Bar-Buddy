@@ -6,6 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -20,7 +24,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            BodyContent()
+            MainScaffold()
         }
     }
 }
@@ -139,16 +143,29 @@ fun MainScaffold() {
 }
 
 @Composable
-fun BodyContent(){
+fun BodyContent() {
+    LazyColumn(
+        modifier = Modifier
+            .padding(top = 70.dp, bottom= 80.dp)
+    ){
+        item {CollapsibleCard(title = "Spirits", content = { ItemContent(AlcoholIngredients) })}
+        item {CollapsibleCard(title = "Cordials", content = { ItemContent(LiqueursIngredients) })}
+        item {CollapsibleCard(title = "Mixers", content = { ItemContent(MixerIngredients) })}
+        item {CollapsibleCard(title = "Garnishes", content = { ItemContent(GarnishIngredients) })}
+    }
+}
+
+@Composable
+fun ItemContent(ingredients: List<String>){
     Column {
-        AlcoholIngredients.chunked(3).forEach { chunk ->
+        ingredients.chunked(3).forEach { chunk ->
             Row(
                 horizontalArrangement = Arrangement.Start,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start=10.dp,end=10.dp),
+                    .padding(start = 10.dp, end = 10.dp),
             ) {
-                for (item in chunk) {IngredientBox(item) }
+                for (item in chunk) {CheckBoxContent(item) }
             }
         }
     }
@@ -156,11 +173,9 @@ fun BodyContent(){
 
 
 @Composable
-fun IngredientBox(title: String){
-    Card(
-        modifier = Modifier.width(130.dp)
-    ){
+fun CheckBoxContent(title: String){
         Row(
+            modifier = Modifier.width(130.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
@@ -172,7 +187,26 @@ fun IngredientBox(title: String){
                 text = title,
             )
         }
-    }
 }
 
-
+@Composable
+fun CollapsibleCard(title: String, content: @Composable () -> Unit){
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ){
+        Text(
+            modifier = Modifier
+                .padding(start=20.dp,top=10.dp,bottom=5.dp)
+                ,
+            text = title,
+            fontSize = 20.sp
+        )
+        content()
+    }
+}
