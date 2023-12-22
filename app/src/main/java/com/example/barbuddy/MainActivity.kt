@@ -1,24 +1,43 @@
 package com.example.barbuddy
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Assignment
+import androidx.compose.material.icons.rounded.Liquor
+import androidx.compose.material.icons.rounded.ListAlt
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.*
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.VerticalAlignmentLine
-import androidx.compose.ui.unit.*
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+val spiritsData = DatabaseProvider.db.IngredientDao().getSpirits()
+val cordialsData = DatabaseProvider.db.IngredientDao().getCordials()
+val mixersData = DatabaseProvider.db.IngredientDao().getMixers()
+val garnishesData = DatabaseProvider.db.IngredientDao().getGarnishes()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,67 +48,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// TODO : Update to a dictionary
-val AlcoholIngredients = listOf(
-    "rum",
-    "vodka",
-    "gin",
-    "sloe gin",
-    "tequila",
-    "mezcal",
-    "bourbon",
-    "whiskey",
-    "Irish whiskey",
-    "scotch",
-    "sweet vermouth",
-    "dry vermouth",
-    "sake",
-    "brandy",
-    "cognac",
-    "aquavit",
-    "absinthe"
-)
-val LiqueursIngredients = listOf(
-    "amaretto",
-    "coffee liquor (Kahlua)",
-    "cream liquor (Baileys)",
-    "amaro",
-    "Aperol",
-    "Benedictine",
-    "Campari",
-    "Chambord",
-    "Chartreuse",
-    "creme de cacao",
-    "creme de cassis",
-    "creme de menthe",
-    "Drambuie",
-    "Jagermeiser",
-    "Galliano",
-    "limoncello",
-    "peppermint schnapps",
-    "St Germain",
-)
-val MixerIngredients = listOf(
-    "sour mix",
-    "lime juice",
-    "lemon juice",
-    "cranberry juice",
-    "tonic water",
-    "club soda",
-    "simple syrup",
-    "grenadine",
-    "ginger beer",
-    "bitters"
-)
-val GarnishIngredients = listOf(
-    "rimming sugar",
-    "maraschino cherry",
-    "lime",
-    "lemon",
-    "orange slice"
-)
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScaffold() {
@@ -100,14 +60,9 @@ fun MainScaffold() {
                      containerColor = MaterialTheme.colorScheme.primaryContainer,
                      titleContentColor = MaterialTheme.colorScheme.primary
                  ),
-                 title = {
-                     Text(
-                         text = "Bar Buddy",
-                     )
-                }
+                 title = { Text("Bar Buddy") }
             )
         },
-        content = { BodyContent() },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
@@ -139,24 +94,46 @@ fun MainScaffold() {
                 )
             }
         }
-    )
-}
-
-@Composable
-fun BodyContent() {
-    LazyColumn(
-        modifier = Modifier
-            .padding(top = 70.dp, bottom= 80.dp)
-    ){
-        item {CollapsibleCard(title = "Spirits", content = { ItemContent(AlcoholIngredients) })}
-        item {CollapsibleCard(title = "Cordials", content = { ItemContent(LiqueursIngredients) })}
-        item {CollapsibleCard(title = "Mixers", content = { ItemContent(MixerIngredients) })}
-        item {CollapsibleCard(title = "Garnishes", content = { ItemContent(GarnishIngredients) })}
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = paddingValues.calculateBottomPadding()
+                )
+        ) {
+        BodyContent()
+        }
     }
 }
 
 @Composable
-fun ItemContent(ingredients: List<String>){
+fun BodyContent() {
+    LazyColumn {
+        item {
+            CollapsibleCard(
+                title = "Spirits",
+                content = { BuildCheckboxGrid(spiritsData) })
+    }
+        item {
+            CollapsibleCard(
+                title = "Cordials",
+                content = { BuildCheckboxGrid(cordialsData) })}
+        item {
+            CollapsibleCard(
+                title = "Mixers",
+                content = { BuildCheckboxGrid(mixersData) })}
+        item {
+            CollapsibleCard(
+                title = "Garnishes",
+                content = { BuildCheckboxGrid(garnishesData) })}
+    }
+}
+
+
+@Composable
+fun BuildCheckboxGrid(ingredients: List<CocktailIngredients>){
     Column {
         ingredients.chunked(3).forEach { chunk ->
             Row(
@@ -165,15 +142,15 @@ fun ItemContent(ingredients: List<String>){
                     .fillMaxWidth()
                     .padding(start = 10.dp, end = 10.dp),
             ) {
-                for (item in chunk) {CheckBoxContent(item) }
+                for (item in chunk) {
+                    BuildIndividualCheckbox( item.name )
+                }
             }
         }
     }
 }
-
-
 @Composable
-fun CheckBoxContent(title: String){
+fun BuildIndividualCheckbox(title: String){
         Row(
             modifier = Modifier.width(130.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -210,3 +187,4 @@ fun CollapsibleCard(title: String, content: @Composable () -> Unit){
         content()
     }
 }
+
