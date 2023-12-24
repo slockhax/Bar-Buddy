@@ -9,7 +9,6 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.Update
 
 @Entity
 data class CocktailIngredients(
@@ -20,16 +19,14 @@ data class CocktailIngredients(
     val available: String
 )
 
-
-//@Entity
-//data class Recipes(
-//    @PrimaryKey
-//    val id : Int,
-//    val name: String,
-//    val ingredients: String,
-//    val tags: String
-//)
-
+@Entity
+data class Recipes(
+    @PrimaryKey
+    val id: Int,
+    val name: String,
+    val ingredients: String,
+    val tags: String?
+)
 
 @Dao
 interface IngredientDao {
@@ -48,12 +45,16 @@ interface IngredientDao {
     @Insert
     fun addIngredient(item: CocktailIngredients)
 
-    @Update
-    fun updateInventory(item: CocktailIngredients)
+    @Query("UPDATE CocktailIngredients SET available = :myValue WHERE name = :name")
+    fun updateInventory(name:String, myValue: String)
+
+    @Query("SELECT * FROM Recipes")
+    fun getAllRecipes(): List<Recipes>
 }
 
-@Database(entities = [CocktailIngredients::class], version = 1, exportSchema = false)
+@Database(entities = [CocktailIngredients::class, Recipes::class], version = 2, exportSchema = false)
 abstract class MyAppDatabase : RoomDatabase() {
+
     abstract fun IngredientDao(): IngredientDao
 
     companion object {
@@ -65,21 +66,8 @@ abstract class MyAppDatabase : RoomDatabase() {
             )
                 .createFromAsset("database/dataSource.db")
                 .allowMainThreadQueries()
+                .fallbackToDestructiveMigration()
                 .build()
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
