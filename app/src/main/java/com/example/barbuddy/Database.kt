@@ -45,8 +45,8 @@ interface IngredientDao {
     @Insert
     fun addIngredient(item: CocktailIngredients)
 
-    @Query("UPDATE CocktailIngredients SET available = :myValue WHERE name = :name")
-    fun updateInventory(name:String, myValue: String)
+    @Query("UPDATE CocktailIngredients SET available = :isAvailable WHERE name = :itemName")
+    fun updateInventory(itemName:String, isAvailable: String)
 
     @Query("SELECT * FROM Recipes")
     fun getAllRecipes(): List<Recipes>

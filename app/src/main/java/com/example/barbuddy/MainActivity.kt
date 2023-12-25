@@ -3,26 +3,14 @@ package com.example.barbuddy
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Assignment
 import androidx.compose.material.icons.rounded.Liquor
 import androidx.compose.material.icons.rounded.ListAlt
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -36,27 +24,22 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.barbuddy.ui.theme.AppTheme
+import com.example.compose.AppTheme
 
 val Dao = DatabaseProvider.db.IngredientDao()
-val spiritsData = Dao.getSpirits()
-val cordialsData = Dao.getCordials()
-val mixersData = Dao.getMixers()
-val garnishesData = Dao.getGarnishes()
-val allRecipes = Dao.getAllRecipes()
-
 
 class MainActivity : ComponentActivity() {
+    override fun onDestroy(){
+        DatabaseProvider.db.close()
+        super.onDestroy()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -161,196 +144,4 @@ fun MainScaffold() {
     }
 }
 
-@Composable
-fun CraftableBodyContent(){
 
-}
-
-@Composable
-fun IngredientsBodyContent() {
-    LazyColumn {
-        item {
-            CollapsibleCard(
-                title = "Spirits",
-                content = { BuildCheckboxGrid(spiritsData) })}
-        item {
-            CollapsibleCard(
-                title = "Cordials",
-                content = { BuildCheckboxGrid(cordialsData) })}
-        item {
-            CollapsibleCard(
-                title = "Mixers",
-                content = { BuildCheckboxGrid(mixersData) })}
-        item {
-            CollapsibleCard(
-                title = "Garnishes",
-                content = { BuildCheckboxGrid(garnishesData) })}
-    }
-}
-
-@Composable
-fun RecipesBodyContent(){
-    Column(){
-        BuildFilterRow()
-        LazyColumn{
-            allRecipes.chunked(2).forEach { chunk ->
-                item{
-                    Row(
-                        modifier = Modifier.padding(10.dp)
-                    ) {
-                        for (recipe in chunk) {
-                            RecipeCard(
-                                title = recipe.name,
-                                content = { RecipeContent(recipe.tags, recipe.ingredients) })
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun RecipeContent(tags: String?, ingredients: String){
-    Column (
-        modifier = Modifier.padding(10.dp)
-    ) {
-    if (tags != null) {
-        val newTags = tags.replace(" ", "\n")
-        Text("\nTags:\n$newTags")
-    }
-        Text("\nIngredients:\n")
-        Text(ingredients.replace(", ","\n"))
-    }
-}
-
-@Composable
-fun BuildCheckboxGrid(ingredients: List<CocktailIngredients>){
-    Column {
-        ingredients.chunked(3).forEach { chunk ->
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, end = 10.dp),
-            ) {
-                for (item in chunk) {
-                    BuildIndividualCheckbox( item.name, item.available.toBoolean() )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun BuildIndividualCheckbox(title: String, state: Boolean){
-    val checkedState = remember { mutableStateOf(state)}
-    Row(
-        modifier = Modifier.width(130.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(
-            checked = checkedState.value,
-            onCheckedChange = {
-                checkedState.value = it
-                updateCheck(title,checkedState.value) }
-        )
-        Text(
-            modifier = Modifier.padding(),
-            text = title,
-        )
-    }
-}
-
-fun updateCheck(title:String,value:Boolean){
-    Dao.updateInventory(title, value.toString())
-}
-
-@Composable
-fun CollapsibleCard(title: String, content: @Composable () -> Unit){
-    Card(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(5.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
-    ){
-        Text(
-            modifier = Modifier
-                .padding(start=20.dp,top=10.dp,bottom=5.dp)
-                ,
-            text = title,
-            fontSize = 20.sp
-        )
-        content()
-    }
-}
-
-@Composable
-fun RowScope.RecipeCard(title: String, content: @Composable () -> Unit){
-    Card(
-        modifier = Modifier
-            .fillMaxSize()
-            .weight(1f)
-            .padding(5.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
-    ){
-        Text(
-            modifier = Modifier
-                .padding(start=20.dp,top=10.dp,bottom=5.dp)
-            ,
-            text = title,
-            fontSize = 20.sp
-        )
-        content()
-    }
-}
-
-val filters = listOf("Mixed","Shaken","Blended","Sweet","Fruity")
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BuildFilterChip(name: String) {
-    var isSelected by remember { mutableStateOf(false) }
-
-    FilterChip(
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            labelColor = MaterialTheme.colorScheme.onBackground,
-            selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer
-//            iconColor = MaterialTheme.colorScheme.primary,
-        ),
-        selected = isSelected,
-        onClick = { isSelected = !isSelected },
-        label = { Text(name) },
-//        leadingIcon = {
-//            if (isSelected) {
-//                Icon(
-//                    Icons.Rounded.Done,
-//                    contentDescription = null,
-//                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-//                )
-//            }
-//        }
-    )
-}
-
-@Composable
-fun BuildFilterRow() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ){
-        for (filter in filters) {
-            BuildFilterChip(name = filter)
-        }
-    }
-
-}
