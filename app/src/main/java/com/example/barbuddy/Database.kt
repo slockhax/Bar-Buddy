@@ -25,12 +25,14 @@ data class Recipes(
     val id: Int,
     val name: String,
     val method: String,
-    val ingredients: String,
+    val iceMethod: String,
+    val liquorIngredients: String,
+    val mixerIngredients: String?,
+    val garnishIngredients: String?,
     val boozy: Int,
     val citrusy: Int,
     val frozen: Int,
     val fruity: Int,
-    val overIce: Int,
     val sweet: Int,
     val tart: Int,
     val warm: Int,
@@ -55,6 +57,9 @@ interface IngredientDao {
 
     @Query("UPDATE CocktailIngredients SET available = :isAvailable WHERE name = :itemName")
     fun updateInventory(itemName:String, isAvailable: String)
+
+    @Query("SELECT * FROM Recipes WHERE name = :name")
+    fun getRecipeByName(name: String): Recipes
 
     @Query("SELECT * FROM Recipes ORDER BY name ASC")
     fun getAllRecipes(): List<Recipes>

@@ -75,7 +75,6 @@ fun collateTags(recipe: Recipes): String{
     if (recipe.citrusy == 1) tags += "Citrusy, "
     if (recipe.frozen == 1) tags += "Frozen, "
     if (recipe.fruity == 1) tags += "Fruity, "
-    if (recipe.overIce == 1) tags += "Over Ice, "
     if (recipe.sweet == 1) tags += "Sweet, "
     if (recipe.tart == 1) tags += "Tart, "
     if (recipe.warm == 1) tags += "Warm, "
