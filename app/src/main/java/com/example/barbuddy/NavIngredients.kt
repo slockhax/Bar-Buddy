@@ -27,12 +27,8 @@ fun IngredientsBodyContent() {
     LazyColumn {
         item {
             CollapsibleCard(
-                title = "Spirits",
+                title = "Alcohol",
                 content = { BuildCheckboxGrid(Dao.getSpirits()) })}
-        item {
-            CollapsibleCard(
-                title = "Cordials",
-                content = { BuildCheckboxGrid(Dao.getCordials()) })}
         item {
             CollapsibleCard(
                 title = "Mixers",

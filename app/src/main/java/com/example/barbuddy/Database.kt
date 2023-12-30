@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
+import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
@@ -11,8 +12,8 @@ import androidx.room.RoomDatabase
 
 @Entity
 data class CocktailIngredients(
-    @PrimaryKey
-    val id: Int,
+    @PrimaryKey (autoGenerate = true)
+    val id: Int = 0,
     val name: String,
     val type: String,
     val available: String
@@ -25,9 +26,8 @@ data class Recipes(
     val name: String,
     val method: String,
     val iceMethod: String,
-    val liquorIngredients: String,
-    val mixerIngredients: String?,
-    val garnishIngredients: String?,
+    val ingredients: String,
+    val garnish: String?,
     val boozy: Int,
     val citrusy: Int,
     val frozen: Int,
@@ -39,16 +39,13 @@ data class Recipes(
 
 @Dao
 interface IngredientDao {
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'spirits' ")
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'alcohol' ORDER BY name")
     fun getSpirits(): List<CocktailIngredients>
 
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'cordials' ")
-    fun getCordials(): List<CocktailIngredients>
-
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'mixers' ")
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'mixer' ORDER BY name")
     fun getMixers(): List<CocktailIngredients>
 
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'garnishes' ")
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'garnish' ORDER BY name")
     fun getGarnishes(): List<CocktailIngredients>
 
     @Query("SELECT * FROM CocktailIngredients WHERE name = :name ")
@@ -62,9 +59,12 @@ interface IngredientDao {
 
     @Query("SELECT * FROM Recipes ORDER BY name ASC")
     fun getAllRecipes(): List<Recipes>
+
+    @Insert
+    fun addIngredient(newItem: CocktailIngredients)
 }
 
-@Database(entities = [CocktailIngredients::class, Recipes::class], version = 2, exportSchema = false)
+@Database(entities = [CocktailIngredients::class, Recipes::class], version = 5, exportSchema = false)
 abstract class MyAppDatabase : RoomDatabase() {
 
     abstract fun IngredientDao(): IngredientDao
@@ -78,7 +78,7 @@ abstract class MyAppDatabase : RoomDatabase() {
             )
                 .createFromAsset("database/dataSource.db")
                 .allowMainThreadQueries()
-                .fallbackToDestructiveMigration()
+//                .fallbackToDestructiveMigration()
                 .build()
         }
     }

@@ -1,5 +1,6 @@
 package com.example.barbuddy
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -46,9 +47,8 @@ fun RecipeDetailScreen(name: String) {
     Column {
         SectionMixingMethod(recipe.method, recipe.iceMethod)
         SectionIngredients(
-            recipe.liquorIngredients,
-            recipe.mixerIngredients,
-            recipe.garnishIngredients)
+            recipe.ingredients,
+            recipe.garnish)
         SectionInstructions()
     }
 }
@@ -63,21 +63,14 @@ fun SectionMixingMethod(method: String, iceMethod: String) {
 }
 
 @Composable
-fun SectionIngredients(liquor: String, mixers: String?, garnish: String?) {
+fun SectionIngredients(liquor: String, garnish: String?) {
     val liquorList = liquor.split(", ")
-    val mixerList = mixers?.split(", ")
     val garnishList = garnish?.split(", ")
     Column {
         BuildTitleText(title = "Ingredients")
-        for (item in liquorList) {
-            BuildIngredientItem(item) }
-        if (mixerList != null) {
-            for (item in mixerList) {
-                BuildIngredientItem(item) }
-        }
+        for (item in liquorList) { BuildIngredientItem(item) }
         if (garnishList != null) {
-            for (item in garnishList) {
-                BuildIngredientItem(item) }
+            for (item in garnishList) { BuildIngredientItem(item, garnish = true) }
         }
     }
 }
@@ -128,9 +121,14 @@ fun BuildMethodItem(content: String){
 }
 
 @Composable
-fun BuildIngredientItem(itemName: String){
-    val nameOnly = itemName.split(" ").drop(1).joinToString(" ")
-    val inStock = Dao.getIngredientByName(nameOnly.lowercase()).available.toBoolean()
+fun BuildIngredientItem(itemName: String, garnish: Boolean = false){
+    var nameOnly = itemName
+    if (!garnish) {
+        nameOnly = itemName.split(" ").drop(2).joinToString(" ")
+        Log.e("ASDF", nameOnly)
+    }
+
+    val inStock = Dao.getIngredientByName(nameOnly).available.toBoolean()
     ListItem (
         modifier = Modifier.padding(start = 20.dp),
         leadingContent = {
