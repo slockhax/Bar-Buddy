@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
-import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
@@ -52,8 +51,8 @@ interface IngredientDao {
     @Query("SELECT * FROM CocktailIngredients WHERE type = 'garnishes' ")
     fun getGarnishes(): List<CocktailIngredients>
 
-    @Insert
-    fun addIngredient(item: CocktailIngredients)
+    @Query("SELECT * FROM CocktailIngredients WHERE name = :name ")
+    fun getIngredientByName(name: String): CocktailIngredients
 
     @Query("UPDATE CocktailIngredients SET available = :isAvailable WHERE name = :itemName")
     fun updateInventory(itemName:String, isAvailable: String)

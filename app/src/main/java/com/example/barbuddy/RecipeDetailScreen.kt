@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AcUnit
 import androidx.compose.material.icons.rounded.Blender
-import androidx.compose.material.icons.rounded.Liquor
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.LocalBar
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material3.AssistChip
@@ -16,15 +17,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 val MethodOptions = mapOf(
     "Blended" to "Mix in a blender until smooth",
     "Stirred" to "Mix item in serving glass",
-    "Shaken" to "Shake items in a cocktail shaker then pour into glass",
-    "Strained" to "Strain ice out when pouring into glass",
+    "Shaken" to "Shake in cocktail shaker then pour into glass",
+)
+
+val IceOptions = mapOf(
+    "Strained" to "Strain out ice when pouring into glass",
     "Over Ice" to "Ice should be in serving glass",
     "Blended Ice" to "Blend with ice",
     "No Ice" to "No ice required",
@@ -67,18 +70,14 @@ fun SectionIngredients(liquor: String, mixers: String?, garnish: String?) {
     Column {
         BuildTitleText(title = "Ingredients")
         for (item in liquorList) {
-            BuildIngredientItem(icon = Icons.Rounded.Liquor, content = item) }
+            BuildIngredientItem(item) }
         if (mixerList != null) {
             for (item in mixerList) {
-                BuildIngredientItem(
-                    icon = ImageVector.vectorResource(R.drawable.rounded_water_medium_24),
-                    content = item) }
+                BuildIngredientItem(item) }
         }
         if (garnishList != null) {
             for (item in garnishList) {
-                BuildIngredientItem(
-                    icon = ImageVector.vectorResource(R.drawable.rounded_nutrition_24),
-                    content = item) }
+                BuildIngredientItem(item) }
         }
     }
 }
@@ -118,27 +117,32 @@ fun BuildMethodItem(content: String){
             )
         },
         supportingContent = {
-            Text(
-                text = MethodOptions[content]?: "",
-                style = MaterialTheme.typography.bodySmall
-            )
+            (MethodOptions[content]?: IceOptions[content])?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     )
 }
 
 @Composable
-fun BuildIngredientItem(icon: ImageVector, content: String){
+fun BuildIngredientItem(itemName: String){
+    val nameOnly = itemName.split(" ").drop(1).joinToString(" ")
+    val inStock = Dao.getIngredientByName(nameOnly.lowercase()).available.toBoolean()
     ListItem (
         modifier = Modifier.padding(start = 20.dp),
         leadingContent = {
             Icon(
-                icon,
-                contentDescription = null
+                imageVector = if (inStock) Icons.Rounded.Check else Icons.Rounded.Close,
+                contentDescription = null,
+                tint = if (inStock) Color.Green else Color.Red
             )
         },
         headlineContent = {
             Text(
-                text = content,
+                text = itemName,
                 style = MaterialTheme.typography.bodyMedium
             )
         },
