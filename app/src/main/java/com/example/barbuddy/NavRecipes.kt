@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Blender
 import androidx.compose.material.icons.rounded.Liquor
 import androidx.compose.material.icons.rounded.LocalBar
@@ -26,28 +27,56 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 
 val methodFilters = listOf("Stirred","Shaken","Blended").sorted()
 val tagFilters = listOf("Sweet","Fruity","Tart","Boozy","Citrusy","Hot","Frozen","Over Ice").sorted()
 
+//@Composable
+//fun RecipesBodyContent(navController: NavController){
+//    Column {
+//        Text(
+//            modifier = Modifier.padding(start=10.dp),
+//            style = MaterialTheme.typography.titleMedium,
+//            text = "Methods")
+//        BuildFilterRow(methodFilters)
+//        Text(
+//            modifier = Modifier.padding(start=10.dp),
+//            style = MaterialTheme.typography.titleMedium,
+//            text = "Descriptors")
+//        BuildFilterRow(tagFilters)
+//        LazyColumn{
+//            item{
+//                Column(
+//                    modifier = Modifier.padding(5.dp),
+//                ) {
+//                    Dao.getAllRecipes().forEach { recipe ->
+//                        val tags = collateTags(recipe)
+//                        Divider()
+//                        RecipeListItem(
+//                            navController,
+//                            title = recipe.name,
+//                            method = recipe.method,
+//                            tags = tags
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+
 @Composable
 fun RecipesBodyContent(navController: NavController){
     Column {
-        Text(
-            modifier = Modifier.padding(start=10.dp),
-            style = MaterialTheme.typography.titleMedium,
-            text = "Methods")
-        BuildFilterRow(methodFilters)
-        Text(
-            modifier = Modifier.padding(start=10.dp),
-            style = MaterialTheme.typography.titleMedium,
-            text = "Descriptors")
-        BuildFilterRow(tagFilters)
+
+        BuildFilterRow(listOf("Method","Descriptor","Ingredient"))
+
         LazyColumn{
             item{
                 Column(
@@ -69,6 +98,29 @@ fun RecipesBodyContent(navController: NavController){
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BuildFilterChip(name: String) {
+    val isSelected by remember { mutableStateOf(false) }
+    val showDialog by remember { mutableStateOf(false) }
+    FilterChip(
+        modifier = Modifier.padding(start=10.dp),
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            labelColor = MaterialTheme.colorScheme.onBackground,
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        selected = isSelected,
+        onClick = { showDialog != showDialog },
+        label = { Text(name) },
+        trailingIcon = { Icon(Icons.Rounded.ArrowDropDown, contentDescription = null) }
+    )
+    if (showDialog) {
+        FilterPopup()
+    }
+}
+
 fun collateTags(recipe: Recipes): String{
     var tags = recipe.method + ", "
     if (recipe.boozy == 1) tags += "Boozy, "
@@ -80,6 +132,15 @@ fun collateTags(recipe: Recipes): String{
     if (recipe.warm == 1) tags += "Warm, "
     tags = tags.dropLast(2)
     return tags
+}
+
+@Composable
+fun FilterPopup(){
+    Popup (
+        alignment = Alignment.BottomStart
+    ){
+        Text("hello world")
+    }
 }
 
 fun clickRecipe(navController: NavController, name:String){
@@ -107,7 +168,7 @@ fun RecipeListItem(navController: NavController,title:String, method:String, tag
 fun BuildFilterRow(filters: List<String>) {
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+        horizontalArrangement = Arrangement.SpaceEvenly
     ){
         for (filter in filters) {
             BuildFilterChip(name = filter)
@@ -115,24 +176,24 @@ fun BuildFilterRow(filters: List<String>) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BuildFilterChip(name: String) {
-    var isSelected by remember { mutableStateOf(false) }
-
-    FilterChip(
-        modifier = Modifier.padding(start=10.dp),
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            labelColor = MaterialTheme.colorScheme.onBackground,
-            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-        ),
-        selected = isSelected,
-        onClick = { isSelected = !isSelected },
-        label = { Text(name) }
-    )
-}
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun BuildFilterChip(name: String) {
+//    var isSelected by remember { mutableStateOf(false) }
+//
+//    FilterChip(
+//        modifier = Modifier.padding(start=10.dp),
+//        colors = FilterChipDefaults.filterChipColors(
+//            containerColor = MaterialTheme.colorScheme.background,
+//            labelColor = MaterialTheme.colorScheme.onBackground,
+//            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+//            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+//        ),
+//        selected = isSelected,
+//        onClick = { isSelected = !isSelected },
+//        label = { Text(name) }
+//    )
+//}
 
 fun getMethodIcon(method: String): ImageVector {
     if (method == "Stirred") { return Icons.Rounded.LocalBar }

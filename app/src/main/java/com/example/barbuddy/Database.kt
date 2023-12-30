@@ -39,13 +39,13 @@ data class Recipes(
 
 @Dao
 interface IngredientDao {
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'alcohol' ORDER BY name")
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'alcohol' ORDER BY name ASC")
     fun getSpirits(): List<CocktailIngredients>
 
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'mixer' ORDER BY name")
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'mixer' ORDER BY name ASC")
     fun getMixers(): List<CocktailIngredients>
 
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'garnish' ORDER BY name")
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'garnish' ORDER BY name ASC")
     fun getGarnishes(): List<CocktailIngredients>
 
     @Query("SELECT * FROM CocktailIngredients WHERE name = :name ")
