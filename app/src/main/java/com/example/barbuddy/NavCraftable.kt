@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun CraftableBodyContent(){
     Column {
-        for (item in Dao.getSpirits()) {
+        for (item in Dao.getAllSpirits()) {
             val name = item.name
             val available = item.available
             Text("$name : $available")

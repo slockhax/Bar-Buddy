@@ -210,7 +210,6 @@ fun BuildLabelChips(labelsList: List<String>?){
     FlowRow (
         modifier = Modifier.padding(start=10.dp, end = 10.dp, bottom = 5.dp)
     ){
-
         if (labelsList != null) {
             for (label in labelsList) {
                 AssistChip(

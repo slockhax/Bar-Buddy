@@ -16,7 +16,9 @@ data class CocktailIngredients(
     val id: Int = 0,
     val name: String,
     val type: String,
-    val available: String
+    val available: String,
+    val coreItem: String,
+    val substitute: String?
 )
 
 @Entity
@@ -39,13 +41,24 @@ data class Recipes(
 
 @Dao
 interface IngredientDao {
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'alcohol' ORDER BY name ASC")
-    fun getSpirits(): List<CocktailIngredients>
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'alcohol' " +
+            "ORDER BY name COLLATE NOCASE")
+    fun getAllSpirits(): List<CocktailIngredients>
 
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'mixer' ORDER BY name ASC")
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'alcohol' AND coreItem = 'true' " +
+            "ORDER BY name COLLATE NOCASE")
+    fun getCoreSpirits(): List<CocktailIngredients>
+
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'alcohol' AND coreItem = 'false' " +
+            "ORDER BY name COLLATE NOCASE")
+    fun getNonCoreSpirits(): List<CocktailIngredients>
+
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'mixer' " +
+            "ORDER BY name COLLATE NOCASE")
     fun getMixers(): List<CocktailIngredients>
 
-    @Query("SELECT * FROM CocktailIngredients WHERE type = 'garnish' ORDER BY name ASC")
+    @Query("SELECT * FROM CocktailIngredients WHERE type = 'garnish' " +
+            "ORDER BY name COLLATE NOCASE")
     fun getGarnishes(): List<CocktailIngredients>
 
     @Query("SELECT * FROM CocktailIngredients WHERE name = :name ")
@@ -64,7 +77,7 @@ interface IngredientDao {
     fun addIngredient(newItem: CocktailIngredients)
 }
 
-@Database(entities = [CocktailIngredients::class, Recipes::class], version = 5, exportSchema = false)
+@Database(entities = [CocktailIngredients::class, Recipes::class], version = 6, exportSchema = false)
 abstract class MyAppDatabase : RoomDatabase() {
 
     abstract fun IngredientDao(): IngredientDao
@@ -78,7 +91,7 @@ abstract class MyAppDatabase : RoomDatabase() {
             )
                 .createFromAsset("database/dataSource.db")
                 .allowMainThreadQueries()
-//                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration()
                 .build()
         }
     }

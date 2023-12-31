@@ -64,8 +64,8 @@ fun SectionMixingMethod(method: String, iceMethod: String) {
 
 @Composable
 fun SectionIngredients(liquor: String, garnish: String?) {
-    val liquorList = liquor.split(", ")
-    val garnishList = garnish?.split(", ")
+    val liquorList = liquor.split(" - ")
+    val garnishList = garnish?.split(" - ")
     Column {
         BuildTitleText(title = "Ingredients")
         for (item in liquorList) { BuildIngredientItem(item) }
