@@ -10,8 +10,6 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.LocalBar
 import androidx.compose.material.icons.rounded.Science
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -106,14 +104,14 @@ fun BuildMethodItem(content: String){
         headlineContent = {
             Text(
                 text = content,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyLarge
             )
         },
         supportingContent = {
             (MethodOptions[content]?: IceOptions[content])?.let {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
@@ -125,9 +123,9 @@ fun BuildIngredientItem(itemName: String, garnish: Boolean = false){
     var nameOnly = itemName
     if (!garnish) {
         nameOnly = itemName.split(" ").drop(2).joinToString(" ")
-        Log.e("ASDF", nameOnly)
+//        Log.e("ASDF", nameOnly)
     }
-
+    Log.e("ASDF",nameOnly)
     val inStock = Dao.getIngredientByName(nameOnly).available.toBoolean()
     ListItem (
         modifier = Modifier.padding(start = 20.dp),
@@ -141,24 +139,8 @@ fun BuildIngredientItem(itemName: String, garnish: Boolean = false){
         headlineContent = {
             Text(
                 text = itemName,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyLarge
             )
         },
-    )
-}
-
-@Composable
-fun BuildMethodChip(method: String) {
-    AssistChip(
-        modifier = Modifier.padding(start=10.dp, end=10.dp),
-        onClick = { /*TODO*/ },
-        label = { Text(method) },
-        border = AssistChipDefaults.assistChipBorder(borderWidth = 0.dp),
-        leadingIcon = {
-            Icon(
-                getMethodIcon(method),
-                contentDescription = "Mixing Method Icon"
-            )
-        }
     )
 }

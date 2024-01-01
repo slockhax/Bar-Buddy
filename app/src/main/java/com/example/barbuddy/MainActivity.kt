@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Assignment
-import androidx.compose.material.icons.rounded.Liquor
 import androidx.compose.material.icons.rounded.ListAlt
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -80,39 +79,26 @@ fun MainScaffold() {
                 NavigationBarItem(
                     selected = selectedNavItem == 0,
                     onClick = {
-                        navController.navigate("Ingredients")
+                        navController.navigate("Recipes")
                         selectedNavItem = 0
                     },
-                    label = { Text("Ingredients") },
-                    icon = { Icon(
-                        Icons.Rounded.ListAlt,
-                        contentDescription = "test image")
+                    label = { Text("Recipes") },
+                    icon = {
+                        Icon(Icons.Rounded.Assignment,
+                            contentDescription = "test image")
                     },
                     colors = navColor
                 )
                 NavigationBarItem(
                     selected = selectedNavItem == 1,
                     onClick = {
-                        navController.navigate("Craftable")
+                        navController.navigate("Ingredients")
                         selectedNavItem = 1
                     },
-                    label = { Text("Craftable") },
-                    icon = {
-                        Icon(Icons.Rounded.Liquor,
+                    label = { Text("Ingredients") },
+                    icon = { Icon(
+                        Icons.Rounded.ListAlt,
                         contentDescription = "test image")
-                    },
-                    colors = navColor
-                )
-                NavigationBarItem(
-                    selected = selectedNavItem == 2,
-                    onClick = {
-                        navController.navigate("All Recipes")
-                        selectedNavItem = 2
-                    },
-                    label = { Text("All Recipes") },
-                    icon = {
-                        Icon(Icons.Rounded.Assignment,
-                            contentDescription = "test image")
                     },
                     colors = navColor
                 )
@@ -127,10 +113,10 @@ fun MainScaffold() {
                     bottom = paddingValues.calculateBottomPadding()
                 )
         ) {
-            NavHost(navController = navController, startDestination = "Ingredients"){
+            NavHost(navController = navController, startDestination = "Recipes"){
                 composable("Ingredients") { IngredientsBodyContent() }
                 composable("Craftable") { CraftableBodyContent() }
-                composable("All Recipes") { RecipesBodyContent(navController) }
+                composable("Recipes") { RecipesBodyContent(navController) }
                 composable("recipeDetail/{recipeName}") { backStackEntry ->
                     backStackEntry.arguments?.getString("recipeName")
                         ?.let { RecipeDetailScreen(it) }

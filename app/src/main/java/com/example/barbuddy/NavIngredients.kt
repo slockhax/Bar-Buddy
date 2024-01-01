@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 fun IngredientsBodyContent() {
     LazyColumn {
         item { IngredientSection("Alcohol, Core", Dao.getCoreSpirits()) }
-        item { IngredientSection("Alcohol, Other", Dao.getNonCoreSpirits()) }
+        item { IngredientSection("Alcohol, Misc.", Dao.getNonCoreSpirits()) }
         item { IngredientSection("Mixers", Dao.getMixers()) }
         item { IngredientSection("Garnishes", Dao.getGarnishes()) }
     }

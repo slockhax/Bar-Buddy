@@ -14,7 +14,6 @@ import androidx.compose.material.icons.rounded.Blender
 import androidx.compose.material.icons.rounded.Liquor
 import androidx.compose.material.icons.rounded.LocalBar
 import androidx.compose.material.icons.rounded.Science
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -34,69 +33,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 
-val methodFilters = listOf("Stirred","Shaken","Blended").sorted()
-val tagFilters = listOf("Sweet","Fruity","Tart","Boozy","Citrusy","Hot","Frozen","Over Ice").sorted()
-
-//@Composable
-//fun RecipesBodyContent(navController: NavController){
-//    Column {
-//        Text(
-//            modifier = Modifier.padding(start=10.dp),
-//            style = MaterialTheme.typography.titleMedium,
-//            text = "Methods")
-//        BuildFilterRow(methodFilters)
-//        Text(
-//            modifier = Modifier.padding(start=10.dp),
-//            style = MaterialTheme.typography.titleMedium,
-//            text = "Descriptors")
-//        BuildFilterRow(tagFilters)
-//        LazyColumn{
-//            item{
-//                Column(
-//                    modifier = Modifier.padding(5.dp),
-//                ) {
-//                    Dao.getAllRecipes().forEach { recipe ->
-//                        val tags = collateTags(recipe)
-//                        Divider()
-//                        RecipeListItem(
-//                            navController,
-//                            title = recipe.name,
-//                            method = recipe.method,
-//                            tags = tags
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-
 @Composable
 fun RecipesBodyContent(navController: NavController){
     Column {
-
         BuildFilterRow(listOf("Method","Descriptor","Ingredient"))
-
         LazyColumn{
             item{
-                Column(
-                    modifier = Modifier.padding(5.dp),
-                ) {
-                    Dao.getAllRecipes().forEach { recipe ->
-                        val tags = collateTags(recipe)
-                        Divider()
-                        RecipeListItem(
-                            navController,
-                            title = recipe.name,
-                            method = recipe.method,
-                            tags = tags
-                        )
-                    }
+                Dao.getAllRecipes().forEach { recipe ->
+                    val tags = collateTags(recipe)
+                    Divider()
+                    RecipeListItem(
+                        navController,
+                        title = recipe.name,
+                        method = recipe.method,
+                        tags = tags
+                    )
                 }
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,7 +61,7 @@ fun BuildFilterChip(name: String) {
     val isSelected by remember { mutableStateOf(false) }
     val showDialog by remember { mutableStateOf(false) }
     FilterChip(
-        modifier = Modifier.padding(start=10.dp),
+//        modifier = Modifier.padding(start=0.dp),
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.background,
             labelColor = MaterialTheme.colorScheme.onBackground,
@@ -167,7 +124,7 @@ fun RecipeListItem(navController: NavController,title:String, method:String, tag
 @Composable
 fun BuildFilterRow(filters: List<String>) {
     FlowRow(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ){
         for (filter in filters) {
@@ -176,48 +133,9 @@ fun BuildFilterRow(filters: List<String>) {
     }
 }
 
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun BuildFilterChip(name: String) {
-//    var isSelected by remember { mutableStateOf(false) }
-//
-//    FilterChip(
-//        modifier = Modifier.padding(start=10.dp),
-//        colors = FilterChipDefaults.filterChipColors(
-//            containerColor = MaterialTheme.colorScheme.background,
-//            labelColor = MaterialTheme.colorScheme.onBackground,
-//            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-//            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-//        ),
-//        selected = isSelected,
-//        onClick = { isSelected = !isSelected },
-//        label = { Text(name) }
-//    )
-//}
-
 fun getMethodIcon(method: String): ImageVector {
     if (method == "Stirred") { return Icons.Rounded.LocalBar }
     if (method == "Shaken") { return Icons.Rounded.Science }
     if (method == "Blended") { return Icons.Rounded.Blender }
     return Icons.Rounded.Liquor
-}
-
-
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun BuildLabelChips(labelsList: List<String>?){
-    FlowRow (
-        modifier = Modifier.padding(start=10.dp, end = 10.dp, bottom = 5.dp)
-    ){
-        if (labelsList != null) {
-            for (label in labelsList) {
-                AssistChip(
-                    modifier = Modifier.padding(end=5.dp),
-                    onClick = { /*TODO*/ },
-                    label = { Text(label) },
-                )
-            }
-        }
-    }
 }
