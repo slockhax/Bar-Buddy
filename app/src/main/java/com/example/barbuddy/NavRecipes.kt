@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
-import androidx.compose.material.icons.rounded.Blender
-import androidx.compose.material.icons.rounded.Liquor
-import androidx.compose.material.icons.rounded.LocalBar
-import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -28,7 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
@@ -36,7 +34,7 @@ import androidx.navigation.NavController
 @Composable
 fun RecipesBodyContent(navController: NavController){
     Column {
-        BuildFilterRow(listOf("Method","Descriptor","Ingredient"))
+        BuildFilterRow()
         LazyColumn{
             item{
                 Dao.getAllRecipes().forEach { recipe ->
@@ -44,7 +42,7 @@ fun RecipesBodyContent(navController: NavController){
                     Divider()
                     RecipeListItem(
                         navController,
-                        title = recipe.name,
+                        itemName = recipe.name,
                         method = recipe.method,
                         tags = tags
                     )
@@ -57,11 +55,10 @@ fun RecipesBodyContent(navController: NavController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildFilterChip(name: String) {
+fun BuildFilterChip(name: String, dropdown: Boolean = true) {
     val isSelected by remember { mutableStateOf(false) }
     val showDialog by remember { mutableStateOf(false) }
     FilterChip(
-//        modifier = Modifier.padding(start=0.dp),
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.background,
             labelColor = MaterialTheme.colorScheme.onBackground,
@@ -71,7 +68,7 @@ fun BuildFilterChip(name: String) {
         selected = isSelected,
         onClick = { showDialog != showDialog },
         label = { Text(name) },
-        trailingIcon = { Icon(Icons.Rounded.ArrowDropDown, contentDescription = null) }
+        trailingIcon = { if (dropdown) Icon(Icons.Rounded.ArrowDropDown, contentDescription = null) }
     )
     if (showDialog) {
         FilterPopup()
@@ -105,15 +102,17 @@ fun clickRecipe(navController: NavController, name:String){
 }
 
 @Composable
-fun RecipeListItem(navController: NavController,title:String, method:String, tags: String){
-    val onClickAction = { clickRecipe(navController, title) }
+fun RecipeListItem(navController: NavController, itemName:String, method:String, tags: String){
+    val onClickAction = { clickRecipe(navController, itemName) }
+    val inStock = Dao.getRecipeByName(itemName).craftable == 1
     ListItem(
         modifier = Modifier.clickable(onClick = onClickAction),
-        headlineContent = { Text(title) },
+        headlineContent = { Text(itemName) },
         supportingContent = { Text(tags) },
         leadingContent = {
             Icon(
-                getMethodIcon(method),
+                imageVector = if (inStock) Icons.Rounded.Check else Icons.Rounded.Close,
+                tint = if (inStock) Color.Green else Color.Red,
                 contentDescription = "test"
             )
         }
@@ -122,20 +121,13 @@ fun RecipeListItem(navController: NavController,title:String, method:String, tag
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BuildFilterRow(filters: List<String>) {
+fun BuildFilterRow() {
     FlowRow(
         modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ){
-        for (filter in filters) {
-            BuildFilterChip(name = filter)
-        }
+            BuildFilterChip("Filters")
+            BuildFilterChip("Ingredients")
+            BuildFilterChip("Craftable Only", dropdown = false)
     }
-}
-
-fun getMethodIcon(method: String): ImageVector {
-    if (method == "Stirred") { return Icons.Rounded.LocalBar }
-    if (method == "Shaken") { return Icons.Rounded.Science }
-    if (method == "Blended") { return Icons.Rounded.Blender }
-    return Icons.Rounded.Liquor
 }

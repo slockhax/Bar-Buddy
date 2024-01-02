@@ -37,6 +37,7 @@ data class Recipes(
     val sweet: Int,
     val tart: Int,
     val warm: Int,
+    val craftable: Int
 )
 
 @Dao
@@ -73,11 +74,17 @@ interface IngredientDao {
     @Query("SELECT * FROM Recipes ORDER BY name ASC")
     fun getAllRecipes(): List<Recipes>
 
+    @Query("SELECT * FROM Recipes WHERE INGREDIENTS LIKE '%' || :ingredientName || '%'")
+    fun getRecipesByIngredient(ingredientName: String): List<Recipes>
+
+    @Query("UPDATE Recipes SET craftable = :isCraftable WHERE name = :recipeName")
+    fun updateCraftableRecipe(recipeName: String, isCraftable: Int)
+
     @Insert
     fun addIngredient(newItem: CocktailIngredients)
 }
 
-@Database(entities = [CocktailIngredients::class, Recipes::class], version = 6, exportSchema = false)
+@Database(entities = [CocktailIngredients::class, Recipes::class], version = 7, exportSchema = false)
 abstract class MyAppDatabase : RoomDatabase() {
 
     abstract fun IngredientDao(): IngredientDao

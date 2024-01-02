@@ -94,6 +94,20 @@ fun IngredientSection(title: String, items: List<CocktailIngredients>){
     Divider(thickness = 1.dp)
 }
 
-fun updateCheck(title:String,value:Boolean){
-    Dao.updateInventory(title, value.toString())
+fun updateCheck(itemName:String,value:Boolean){
+    Dao.updateInventory(itemName, value.toString())
+    val effectedRecipes = Dao.getRecipesByIngredient(itemName)
+    for (recipe in effectedRecipes) {
+        val ingredientsList = recipe.ingredients.split(" - ")
+        var isCraftable = 1
+        for (item in ingredientsList) {
+            val nameOnly = item.split(" ").drop(2).joinToString(" ")
+            val isAvailable = Dao.getIngredientByName(nameOnly).available
+            if (!isAvailable.toBoolean()) {
+                isCraftable = 0
+                break
+            }
+        }
+        Dao.updateCraftableRecipe(recipe.name, isCraftable)
+    }
 }

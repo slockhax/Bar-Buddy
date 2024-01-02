@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package com.example.barbuddy
 
 import android.os.Bundle
@@ -55,7 +57,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScaffold() {
 
