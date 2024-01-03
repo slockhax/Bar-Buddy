@@ -84,7 +84,7 @@ interface IngredientDao {
     fun addIngredient(newItem: CocktailIngredients)
 }
 
-@Database(entities = [CocktailIngredients::class, Recipes::class], version = 7, exportSchema = false)
+@Database(entities = [CocktailIngredients::class, Recipes::class], version = 1, exportSchema = false)
 abstract class MyAppDatabase : RoomDatabase() {
 
     abstract fun IngredientDao(): IngredientDao

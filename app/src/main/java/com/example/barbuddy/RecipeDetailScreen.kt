@@ -44,9 +44,8 @@ fun RecipeDetailScreen(name: String) {
     val recipe: Recipes = Dao.getRecipeByName(name)
     Column {
         SectionMixingMethod(recipe.method, recipe.iceMethod)
-        SectionIngredients(
-            recipe.ingredients,
-            recipe.garnish)
+        SectionIngredients(recipe.ingredients)
+        recipe.garnish?.let { SectionIngredients(it, isGarnish = true) }
         SectionInstructions()
     }
 }
@@ -61,15 +60,11 @@ fun SectionMixingMethod(method: String, iceMethod: String) {
 }
 
 @Composable
-fun SectionIngredients(liquor: String, garnish: String?) {
-    val liquorList = liquor.split(" - ")
-    val garnishList = garnish?.split(" - ")
+fun SectionIngredients(ingredients: String, isGarnish: Boolean = false) {
+    val ingredientsList = ingredients.split(" - ")
     Column {
-        BuildTitleText(title = "Ingredients")
-        for (item in liquorList) { BuildIngredientItem(item) }
-        if (garnishList != null) {
-            for (item in garnishList) { BuildIngredientItem(item, garnish = true) }
-        }
+        BuildTitleText(title = if (!isGarnish) "Ingredients" else "Garnish")
+        for (item in ingredientsList) { BuildIngredientItem(item, isGarnish) }
     }
 }
 
