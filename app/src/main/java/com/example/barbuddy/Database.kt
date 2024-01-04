@@ -30,14 +30,15 @@ data class Recipes(
     val iceMethod: String,
     val ingredients: String,
     val garnish: String?,
-    val boozy: Int,
-    val citrusy: Int,
-    val frozen: Int,
-    val fruity: Int,
-    val sweet: Int,
-    val tart: Int,
-    val warm: Int,
+    val descriptors: String?,
     val craftable: Int
+//    val boozy: Int,
+//    val citrusy: Int,
+//    val frozen: Int,
+//    val fruity: Int,
+//    val sweet: Int,
+//    val tart: Int,
+//    val warm: Int,
 )
 
 @Dao
@@ -84,7 +85,7 @@ interface IngredientDao {
     fun addIngredient(newItem: CocktailIngredients)
 }
 
-@Database(entities = [CocktailIngredients::class, Recipes::class], version = 1, exportSchema = false)
+@Database(entities = [CocktailIngredients::class, Recipes::class], version = 2, exportSchema = false)
 abstract class MyAppDatabase : RoomDatabase() {
 
     abstract fun IngredientDao(): IngredientDao
