@@ -1,5 +1,6 @@
 package com.example.barbuddy
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,7 +22,6 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -41,13 +42,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 
+object FilterSingleton {
+    var descriptor: String = ""
+    var ingredient: String = ""
+}
+
 @Composable
 fun RecipesBodyContent(navController: NavController){
+    val filterA by remember { mutableStateOf(FilterSingleton.descriptor) }
+    val filterB by remember { mutableStateOf(FilterSingleton.ingredient) }
+
     Column {
         BuildFilterRow()
         LazyColumn{
             item{
-                Dao.getAllRecipes().forEach { recipe ->
+                Dao.getFilteredRecipes(filterA,filterB).forEach { recipe ->
                     var tags = recipe.method
                     recipe.descriptors?.let { tags += ", $it" }
                     Divider()
@@ -64,28 +73,28 @@ fun RecipesBodyContent(navController: NavController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildFilterChip(name: String, dropdown: Boolean = true) {
-    val isSelected by remember { mutableStateOf(false) }
+fun BuildFilterChip(name: String, filters: List<String>? = null) {
     var showDialog by remember { mutableStateOf(false) }
     FilterChip(
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.background,
             labelColor = MaterialTheme.colorScheme.onBackground,
-            selectedContainerColor = MaterialTheme.colorScheme.background,
-            selectedLabelColor = MaterialTheme.colorScheme.onBackground
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
-        selected = false,
+        modifier = Modifier.padding(start=5.dp, end = 5.dp),
+        selected = (FilterSingleton.descriptor != ""),
         onClick = { showDialog = !showDialog },
         label = { Text(name) },
-        trailingIcon = { if (dropdown) Icon(Icons.Rounded.ArrowDropDown, contentDescription = null) }
+        trailingIcon = { if (filters != null) Icon(Icons.Rounded.ArrowDropDown, contentDescription = null) }
     )
     if (showDialog) {
-        FilterPopup(name, onDismiss = {showDialog = false})
+        FilterPopup(name, filters, onDismiss = {showDialog = false})
     }
 }
 
 @Composable
-fun FilterPopup(name: String = "Title", onDismiss: () -> Unit) {
+fun FilterPopup(name: String = "Title", filters:List<String>?, onDismiss: () -> Unit) {
     Popup {
     Box(
         modifier = Modifier
@@ -104,7 +113,7 @@ fun FilterPopup(name: String = "Title", onDismiss: () -> Unit) {
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = {  }
+                    onClick = { }
                 )
                 .align(Alignment.BottomCenter),
             shape = RoundedCornerShape(0.dp),
@@ -122,36 +131,38 @@ fun FilterPopup(name: String = "Title", onDismiss: () -> Unit) {
             Card (
                 modifier = Modifier
                     .padding(20.dp)
+                    .heightIn(max = 400.dp)
                     .border(
                         width = 1.dp,
                         color = Color.LightGray,
                         shape = RoundedCornerShape(10.dp)
                     )
             ) {
-                val filters = listOf("Boozy","Citrusy","Frozen","Fruity","Sweet","Tart","Warm")
-
+                filters?.let {
                 LazyColumn {
-                    items(filters) { filterItem ->
+                    items(it) { filterItem ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(color = Color.White)
-                                .padding(3.dp),
+                                .padding(10.dp)
+                                .clickable(onClick = {
+                                    FilterSingleton.descriptor = filterItem
+                                    Log.e("ASDF", filterItem)
+                                    onDismiss()
+                                }),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val isChecked = remember { mutableStateOf(false) }
-                            Checkbox(
-                                checked = isChecked.value,
-                                onCheckedChange = { isChecked.value = !isChecked.value }
-                            )
                             Text(
-                                modifier = Modifier.padding(start = 5.dp),
-                                text = filterItem
+                                modifier = Modifier.padding(start = 5.dp)
+                                ,
+                                text = filterItem,
                             )
+
                         }
                         Divider()
                     }
-                }
+                }}
             }
         }
     }
@@ -186,10 +197,13 @@ fun BuildFilterRow() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 10.dp, end = 10.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.Center
     ){
-            BuildFilterChip("Filters")
-            BuildFilterChip("Ingredients")
-            BuildFilterChip("Craftable Only", dropdown = false)
+        val filtersList = Dao.getFiltersList().value.split(", ")
+        val ingredientsList = mutableListOf<String>()
+        Dao.getAllSpirits().forEach{ item -> ingredientsList.add(item.name) }
+        BuildFilterChip("Filters", filtersList)
+        BuildFilterChip("Ingredients", ingredientsList)
+        BuildFilterChip("Craftable Only")
     }
 }

@@ -32,13 +32,14 @@ data class Recipes(
     val garnish: String?,
     val descriptors: String?,
     val craftable: Int
-//    val boozy: Int,
-//    val citrusy: Int,
-//    val frozen: Int,
-//    val fruity: Int,
-//    val sweet: Int,
-//    val tart: Int,
-//    val warm: Int,
+)
+
+@Entity
+data class Data(
+    @PrimaryKey
+    val id: Int,
+    val dataKey: String,
+    val value: String,
 )
 
 @Dao
@@ -75,17 +76,29 @@ interface IngredientDao {
     @Query("SELECT * FROM Recipes ORDER BY name ASC")
     fun getAllRecipes(): List<Recipes>
 
+    @Query("SELECT * FROM Recipes " +
+            "WHERE descriptors LIKE '%' || :descriptor || '%' " +
+            "AND ingredients LIKE '%' || :ingredient || '%' " +
+            "ORDER BY name ASC")
+    fun getFilteredRecipes(descriptor: String, ingredient: String): List<Recipes>
+
     @Query("SELECT * FROM Recipes WHERE INGREDIENTS LIKE '%' || :ingredientName || '%'")
     fun getRecipesByIngredient(ingredientName: String): List<Recipes>
 
     @Query("UPDATE Recipes SET craftable = :isCraftable WHERE name = :recipeName")
     fun updateCraftableRecipe(recipeName: String, isCraftable: Int)
 
+    @Query("SELECT * FROM Data WHERE dataKey = 'descriptors'")
+    fun getFiltersList(): Data
+
     @Insert
     fun addIngredient(newItem: CocktailIngredients)
 }
 
-@Database(entities = [CocktailIngredients::class, Recipes::class], version = 2, exportSchema = false)
+@Database(
+    entities = [CocktailIngredients::class, Recipes::class, Data::class],
+    version = 1,
+    exportSchema = false)
 abstract class MyAppDatabase : RoomDatabase() {
 
     abstract fun IngredientDao(): IngredientDao
@@ -99,7 +112,7 @@ abstract class MyAppDatabase : RoomDatabase() {
             )
                 .createFromAsset("database/dataSource.db")
                 .allowMainThreadQueries()
-                .fallbackToDestructiveMigration()
+//                .fallbackToDestructiveMigration()
                 .build()
         }
     }
