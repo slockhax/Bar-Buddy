@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -51,12 +52,13 @@ object FilterSingleton {
 fun RecipesBodyContent(navController: NavController){
     val filterA by remember { mutableStateOf(FilterSingleton.descriptor) }
     val filterB by remember { mutableStateOf(FilterSingleton.ingredient) }
+    val filterC by remember { mutableStateOf(Dao.getFilteredRecipes(filterA,filterB)) }
 
     Column {
         BuildFilterRow()
         LazyColumn{
             item{
-                Dao.getFilteredRecipes(filterA,filterB).forEach { recipe ->
+                filterC.forEach { recipe ->
                     var tags = recipe.method
                     recipe.descriptors?.let { tags += ", $it" }
                     Divider()
@@ -94,7 +96,7 @@ fun BuildFilterChip(name: String, filters: List<String>? = null) {
 }
 
 @Composable
-fun FilterPopup(name: String = "Title", filters:List<String>?, onDismiss: () -> Unit) {
+fun FilterPopup(name: String, filters:List<String>?, onDismiss: () -> Unit) {
     Popup {
     Box(
         modifier = Modifier
@@ -122,12 +124,23 @@ fun FilterPopup(name: String = "Title", filters:List<String>?, onDismiss: () -> 
                 contentColor = Color.Black,
             ),
         ) {
-            Text (
-                text = name,
-                modifier = Modifier
-                    .padding(top = 15.dp, start = 15.dp),
-                style = MaterialTheme.typography.titleLarge,
-            )
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                Text(
+                    text = name,
+                    modifier = Modifier
+                        .padding(top = 15.dp, start = 15.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Spacer(Modifier.weight(1f))
+                Text(
+                    modifier = Modifier.padding(10.dp),
+                    text = "Clear Filters",
+                    style = MaterialTheme.typography.titleSmall
+                )
+            }
             Card (
                 modifier = Modifier
                     .padding(20.dp)
@@ -145,7 +158,7 @@ fun FilterPopup(name: String = "Title", filters:List<String>?, onDismiss: () -> 
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(color = Color.White)
-                                .padding(10.dp)
+                                .padding(15.dp)
                                 .clickable(onClick = {
                                     FilterSingleton.descriptor = filterItem
                                     Log.e("ASDF", filterItem)

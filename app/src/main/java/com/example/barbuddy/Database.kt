@@ -112,7 +112,7 @@ abstract class MyAppDatabase : RoomDatabase() {
             )
                 .createFromAsset("database/dataSource.db")
                 .allowMainThreadQueries()
-//                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration()
                 .build()
         }
     }
