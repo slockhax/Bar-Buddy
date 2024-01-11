@@ -1,6 +1,5 @@
 package com.example.barbuddy
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,36 +40,49 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 
-object FilterSingleton {
-    var descriptor: String = ""
-    var ingredient: String = ""
+
+
+class RecipeViewModel(private val recipeDao: IngredientDao) : ViewModel() {
+    val recipes: LiveData<List<Recipes>> = recipeDao.getFilteredRecipes("","")
 }
 
 @Composable
-fun RecipesBodyContent(navController: NavController){
-    val filterA by remember { mutableStateOf(FilterSingleton.descriptor) }
-    val filterB by remember { mutableStateOf(FilterSingleton.ingredient) }
-    val filterC by remember { mutableStateOf(Dao.getFilteredRecipes(filterA,filterB)) }
+fun RecipeListScreen(viewModel: RecipeViewModel = viewModel()) {
+    val recipes by viewModel.recipes.observeAsState(initial = emptyList())
 
-    Column {
-        BuildFilterRow()
-        LazyColumn{
-            item{
-                filterC.forEach { recipe ->
-                    var tags = recipe.method
-                    recipe.descriptors?.let { tags += ", $it" }
-                    Divider()
-                    RecipeListItem(
-                        navController,
-                        itemName = recipe.name,
-                        tags = tags
-                    )
-                }
-            }
+    LazyColumn {
+        items(recipes) { recipe ->
+            Text(recipe.toString())
         }
     }
+}
+
+
+
+@Composable
+fun RecipesBodyContent(navController: NavController){
+
+//    Column {
+//        BuildFilterRow()
+//        LazyColumn{
+//            item{
+//                viewModel.recipeList.observe { recipe ->
+//                    var tags = recipe.method
+//                    recipe.descriptors?.let { tags += ", $it" }
+//                    Divider()
+//                    RecipeListItem(
+//                        navController,
+//                        itemName = recipe.name,
+//                        tags = tags
+//                    )
+//                }
+//            }
+//        }
+//    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,7 +97,7 @@ fun BuildFilterChip(name: String, filters: List<String>? = null) {
             selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         modifier = Modifier.padding(start=5.dp, end = 5.dp),
-        selected = (FilterSingleton.descriptor != ""),
+        selected = false,
         onClick = { showDialog = !showDialog },
         label = { Text(name) },
         trailingIcon = { if (filters != null) Icon(Icons.Rounded.ArrowDropDown, contentDescription = null) }
@@ -158,12 +170,12 @@ fun FilterPopup(name: String, filters:List<String>?, onDismiss: () -> Unit) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(color = Color.White)
-                                .padding(15.dp)
-                                .clickable(onClick = {
-                                    FilterSingleton.descriptor = filterItem
-                                    Log.e("ASDF", filterItem)
-                                    onDismiss()
-                                }),
+                                .padding(15.dp),
+//                                .clickable(onClick = {
+//                                    FilterSingleton.descriptor = filterItem
+//                                    Log.e("ASDF", filterItem)
+//                                    onDismiss()
+//                                }),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(

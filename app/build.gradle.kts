@@ -75,4 +75,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     // Navigation support
     implementation("androidx.navigation:navigation-compose:2.7.6")
+
+    implementation ("androidx.activity:activity-ktx")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx")
 }

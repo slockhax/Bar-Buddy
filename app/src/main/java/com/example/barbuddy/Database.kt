@@ -1,6 +1,7 @@
 package com.example.barbuddy
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -80,7 +81,7 @@ interface IngredientDao {
             "WHERE descriptors LIKE '%' || :descriptor || '%' " +
             "AND ingredients LIKE '%' || :ingredient || '%' " +
             "ORDER BY name ASC")
-    fun getFilteredRecipes(descriptor: String, ingredient: String): List<Recipes>
+    fun getFilteredRecipes(descriptor: String, ingredient: String): LiveData<List<Recipes>>
 
     @Query("SELECT * FROM Recipes WHERE INGREDIENTS LIKE '%' || :ingredientName || '%'")
     fun getRecipesByIngredient(ingredientName: String): List<Recipes>
