@@ -1,5 +1,6 @@
 package com.example.barbuddy
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,49 +42,53 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 
 
 
-class RecipeViewModel(private val recipeDao: IngredientDao) : ViewModel() {
-    val recipes: LiveData<List<Recipes>> = recipeDao.getFilteredRecipes("","")
-}
 
-@Composable
-fun RecipeListScreen(viewModel: RecipeViewModel = viewModel()) {
-    val recipes by viewModel.recipes.observeAsState(initial = emptyList())
 
-    LazyColumn {
-        items(recipes) { recipe ->
-            Text(recipe.toString())
-        }
+class YourViewModel(private val dao: IngredientDao) : ViewModel() {
+    private var descriptor: String = ""
+    private var ingredient: String = ""
+    var recipesLiveData = MutableLiveData<List<Recipes>>().apply{
+        value = dao.getAllRecipes()
+    }
+
+
+    fun updateFilter(newDescriptor: String){
+        descriptor = newDescriptor
+        val data = dao.getFilteredRecipes(descriptor,ingredient)
+        recipesLiveData.postValue(data)
+        Log.e("ViewModel",descriptor)
+        Log.e("ViewModel",data.toString())
+        Log.e("ViewModel",this.toString())
     }
 }
 
-
-
 @Composable
-fun RecipesBodyContent(navController: NavController){
-
-//    Column {
-//        BuildFilterRow()
-//        LazyColumn{
-//            item{
-//                viewModel.recipeList.observe { recipe ->
-//                    var tags = recipe.method
-//                    recipe.descriptors?.let { tags += ", $it" }
-//                    Divider()
-//                    RecipeListItem(
-//                        navController,
-//                        itemName = recipe.name,
-//                        tags = tags
-//                    )
-//                }
-//            }
-//        }
-//    }
+fun RecipesBodyContent(
+    navController: NavController,
+    viewModel: YourViewModel = YourViewModel(Dao)
+){
+    val recipesList by viewModel.recipesLiveData.observeAsState()
+    Column {
+        BuildFilterRow()
+        LazyColumn {
+            items(recipesList.orEmpty()) { recipe ->
+                var tags = recipe.method
+                recipe.descriptors?.let { tags += ", $it" }
+                Divider()
+                RecipeListItem(
+                    navController,
+                    itemName = recipe.name,
+                    tags = tags
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,7 +114,12 @@ fun BuildFilterChip(name: String, filters: List<String>? = null) {
 }
 
 @Composable
-fun FilterPopup(name: String, filters:List<String>?, onDismiss: () -> Unit) {
+fun FilterPopup(
+    name: String,
+    filters:List<String>?,
+    onDismiss: () -> Unit,
+    viewModel: YourViewModel = YourViewModel(Dao)
+) {
     Popup {
     Box(
         modifier = Modifier
@@ -170,12 +181,12 @@ fun FilterPopup(name: String, filters:List<String>?, onDismiss: () -> Unit) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(color = Color.White)
-                                .padding(15.dp),
-//                                .clickable(onClick = {
-//                                    FilterSingleton.descriptor = filterItem
-//                                    Log.e("ASDF", filterItem)
-//                                    onDismiss()
-//                                }),
+                                .padding(15.dp)
+                                .clickable(onClick = {
+                                    viewModel.updateFilter(filterItem)
+                                    Log.e("Popup", viewModel.toString())
+                                    onDismiss()
+                                }),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -183,7 +194,6 @@ fun FilterPopup(name: String, filters:List<String>?, onDismiss: () -> Unit) {
                                 ,
                                 text = filterItem,
                             )
-
                         }
                         Divider()
                     }
