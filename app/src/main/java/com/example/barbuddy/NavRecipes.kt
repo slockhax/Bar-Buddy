@@ -1,6 +1,5 @@
 package com.example.barbuddy
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,38 +43,57 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 
 
+object FilterSingleton {
+    var descriptor: String = ""
+    var ingredient: String = ""
+    var craftable: Boolean = false
+}
 
-
-
-class YourViewModel(private val dao: IngredientDao) : ViewModel() {
-    private var descriptor: String = ""
-    private var ingredient: String = ""
-    var recipesLiveData = MutableLiveData<List<Recipes>>().apply{
-        value = dao.getAllRecipes()
+class YourViewModel() : ViewModel() {
+    private val dao: IngredientDao = Dao
+    private val craftableInt = if (FilterSingleton.craftable) 1 else 0
+    val recipesLiveData = MutableLiveData<List<Recipes>>().apply{
+        value = dao.getFilteredRecipes(
+            FilterSingleton.descriptor,
+            FilterSingleton.ingredient,
+            craftableInt)
     }
 
-
-    fun updateFilter(newDescriptor: String){
-        descriptor = newDescriptor
-        val data = dao.getFilteredRecipes(descriptor,ingredient)
+    fun updateFilter(filterType: String, newDescriptor: String) {
+        if (filterType == "Filters") { FilterSingleton.descriptor = newDescriptor }
+        if (filterType == "Ingredients") { FilterSingleton.ingredient = newDescriptor}
+        val data = dao.getFilteredRecipes(
+            FilterSingleton.descriptor,
+            FilterSingleton.ingredient,
+            craftableInt)
         recipesLiveData.postValue(data)
-        Log.e("ViewModel",descriptor)
-        Log.e("ViewModel",data.toString())
-        Log.e("ViewModel",this.toString())
+    }
+
+    fun updateCraftable() {
+        FilterSingleton.craftable = !FilterSingleton.craftable
+        val craftableInt = if (FilterSingleton.craftable) 1 else 0
+
+        val data = dao.getFilteredRecipes(
+            FilterSingleton.descriptor,
+            FilterSingleton.ingredient,
+            craftableInt)
+        recipesLiveData.postValue(data)
     }
 }
 
 @Composable
 fun RecipesBodyContent(
     navController: NavController,
-    viewModel: YourViewModel = YourViewModel(Dao)
+    viewModel: YourViewModel = viewModel()
 ){
     val recipesList by viewModel.recipesLiveData.observeAsState()
     Column {
         BuildFilterRow()
+
         LazyColumn {
             items(recipesList.orEmpty()) { recipe ->
                 var tags = recipe.method
@@ -93,8 +111,12 @@ fun RecipesBodyContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildFilterChip(name: String, filters: List<String>? = null) {
+fun BuildFilterChip(name: String, filters: List<String>? = null, viewModel: YourViewModel = viewModel()) {
     var showDialog by remember { mutableStateOf(false) }
+    var isSelected = false
+    if (name == "Filters") { isSelected = (FilterSingleton.descriptor != "") }
+    if (name == "Ingredients") { isSelected = (FilterSingleton.ingredient != "") }
+    if (name == "Craftable Only") { isSelected = FilterSingleton.craftable }
     FilterChip(
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.background,
@@ -103,7 +125,7 @@ fun BuildFilterChip(name: String, filters: List<String>? = null) {
             selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         modifier = Modifier.padding(start=5.dp, end = 5.dp),
-        selected = false,
+        selected = isSelected,
         onClick = { showDialog = !showDialog },
         label = { Text(name) },
         trailingIcon = { if (filters != null) Icon(Icons.Rounded.ArrowDropDown, contentDescription = null) }
@@ -118,8 +140,12 @@ fun FilterPopup(
     name: String,
     filters:List<String>?,
     onDismiss: () -> Unit,
-    viewModel: YourViewModel = YourViewModel(Dao)
+    viewModel: YourViewModel = viewModel()
 ) {
+    if (filters == null) {
+        viewModel.updateCraftable()
+        onDismiss()
+    }
     Popup {
     Box(
         modifier = Modifier
@@ -159,8 +185,13 @@ fun FilterPopup(
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    modifier = Modifier.padding(10.dp),
-                    text = "Clear Filters",
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .clickable {
+                            viewModel.updateFilter(name, "")
+                            onDismiss()
+                        },
+                    text = "Clear Filter",
                     style = MaterialTheme.typography.titleSmall
                 )
             }
@@ -177,14 +208,17 @@ fun FilterPopup(
                 filters?.let {
                 LazyColumn {
                     items(it) { filterItem ->
+                        val bgColor = if (
+                            filterItem == FilterSingleton.ingredient ||
+                            filterItem == FilterSingleton.descriptor )
+                            MaterialTheme.colorScheme.primaryContainer else Color.White
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(color = Color.White)
+                                .background(color = bgColor)
                                 .padding(15.dp)
                                 .clickable(onClick = {
-                                    viewModel.updateFilter(filterItem)
-                                    Log.e("Popup", viewModel.toString())
+                                    viewModel.updateFilter(name, filterItem)
                                     onDismiss()
                                 }),
                             verticalAlignment = Alignment.CenterVertically
