@@ -79,8 +79,9 @@ interface IngredientDao {
     @Query("SELECT * FROM Recipes " +
             "WHERE descriptors LIKE '%' || :descriptor || '%' " +
             "AND ingredients LIKE '%' || :ingredient || '%' " +
+            "AND craftable IN ('1', :craftable) " +
             "ORDER BY name ASC")
-    fun getFilteredRecipes(descriptor: String, ingredient: String): List<Recipes>
+    fun getFilteredRecipes(descriptor: String, ingredient: String, craftable: Int): List<Recipes>
 
     @Query("SELECT * FROM Recipes WHERE INGREDIENTS LIKE '%' || :ingredientName || '%'")
     fun getRecipesByIngredient(ingredientName: String): List<Recipes>
@@ -112,7 +113,7 @@ abstract class MyAppDatabase : RoomDatabase() {
             )
                 .createFromAsset("database/dataSource.db")
                 .allowMainThreadQueries()
-                .fallbackToDestructiveMigration()
+//                .fallbackToDestructiveMigration()
                 .build()
         }
     }
