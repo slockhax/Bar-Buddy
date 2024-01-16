@@ -30,7 +30,7 @@ data class Recipes(
     val iceMethod: String,
     val ingredients: String,
     val garnish: String?,
-    val descriptors: String?,
+    val descriptors: String,
     val craftable: Int
 )
 
@@ -76,6 +76,7 @@ interface IngredientDao {
     @Query("SELECT * FROM Recipes ORDER BY name ASC")
     fun getAllRecipes(): List<Recipes>
 
+    // TODO : Filter needs to account for similar names  e.g.  vodka -> vodka, citron
     @Query("SELECT * FROM Recipes " +
             "WHERE descriptors LIKE '%' || :descriptor || '%' " +
             "AND ingredients LIKE '%' || :ingredient || '%' " +
@@ -98,7 +99,7 @@ interface IngredientDao {
 
 @Database(
     entities = [CocktailIngredients::class, Recipes::class, Data::class],
-    version = 1,
+    version = 2,
     exportSchema = false)
 abstract class MyAppDatabase : RoomDatabase() {
 
@@ -113,7 +114,7 @@ abstract class MyAppDatabase : RoomDatabase() {
             )
                 .createFromAsset("database/dataSource.db")
                 .allowMainThreadQueries()
-//                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration()
                 .build()
         }
     }

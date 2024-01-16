@@ -1,13 +1,12 @@
 package com.example.barbuddy
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AcUnit
 import androidx.compose.material.icons.rounded.Blender
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Block
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.LocalBar
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material3.Icon
@@ -27,7 +26,7 @@ val MethodOptions = mapOf(
 
 val IceOptions = mapOf(
     "Strained" to "Strain out ice when pouring into glass",
-    "Over Ice" to "Ice should be in serving glass",
+    "Over Ice" to "Serve with ice in glass",
     "Blended Ice" to "Blend with ice",
     "No Ice" to "No ice required",
     "Hot Drink" to "No ice required"
@@ -68,6 +67,8 @@ fun SectionIngredients(ingredients: String, isGarnish: Boolean = false) {
     }
 }
 
+
+// TODO : add section for instructions / notes
 @Composable
 fun SectionInstructions() {
     Column {
@@ -118,15 +119,13 @@ fun BuildIngredientItem(itemName: String, garnish: Boolean = false){
     var nameOnly = itemName
     if (!garnish) {
         nameOnly = itemName.split(" ").drop(2).joinToString(" ")
-//        Log.e("ASDF", nameOnly)
     }
-    Log.e("ASDF",nameOnly)
     val inStock = Dao.getIngredientByName(nameOnly).available.toBoolean()
     ListItem (
         modifier = Modifier.padding(start = 20.dp),
         leadingContent = {
             Icon(
-                imageVector = if (inStock) Icons.Rounded.Check else Icons.Rounded.Close,
+                imageVector = if (inStock) Icons.Rounded.CheckCircle else Icons.Rounded.Block,
                 contentDescription = null,
                 tint = if (inStock) Color.Green else Color.Red
             )

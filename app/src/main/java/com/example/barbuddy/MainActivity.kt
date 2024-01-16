@@ -1,18 +1,19 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 package com.example.barbuddy
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Assignment
 import androidx.compose.material.icons.rounded.ListAlt
-import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -28,7 +30,9 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -116,12 +120,13 @@ fun MainScaffold() {
         ) {
             NavHost(navController = navController, startDestination = "Recipes"){
                 composable("Ingredients") { IngredientsBodyContent() }
-                composable("Craftable") { CraftableBodyContent() }
                 composable("Recipes") { RecipesBodyContent(navController) }
                 composable("recipeDetail/{recipeName}") { backStackEntry ->
                     backStackEntry.arguments?.getString("recipeName")
                         ?.let { RecipeDetailScreen(it) }
                 }
+                composable("Add New Recipe") { AddNewRecipe() }
+                composable("Add New Ingredient") { AddNewIngredient() }
             }
         }
     }
@@ -139,22 +144,159 @@ fun BuildTopAppBar(navController: NavController) {
         titleContentColor = MaterialTheme.colorScheme.onSurface,
         actionIconContentColor = MaterialTheme.colorScheme.onSurface,
     )
-    if (recipeName == null) {
-        CenterAlignedTopAppBar(
+    if (currentRoute == "Ingredients" || currentRoute == "Recipes") {
+        TopAppBar(
             title = { Text("Home Bar Buddy") },
             colors = topAppColors,
+            actions = {
+                IconButton(onClick = { addNewItem(currentRoute, navController) }) {
+                    Icon(Icons.Filled.Add,"Add new item")
+                }
+            }
+        )
+    } else if (recipeName != null){
+        TopAppBar(
+            title = { Text(recipeName) },
+            colors = topAppColors,
+            navigationIcon = {
+                IconButton(onClick = { navController.navigateUp() }) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back Button")
+                }
+            },
         )
     } else {
         TopAppBar(
-            title = { Text((recipeName)) },
+            title = { Text(currentRoute.toString()) },
             colors = topAppColors,
             navigationIcon = {
-                IconButton(
-                    onClick = { navController.navigateUp() }
-                ) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                IconButton(onClick = { navController.navigateUp() }) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back Button")
                 }
             },
         )
     }
+}
+
+fun addNewItem(type: String?, navController: NavController) {
+    if (type != null) {
+        when (type) {
+            "Recipes" -> navController.navigate("Add New Recipe")
+            "Ingredients" -> navController.navigate("Add New Ingredient")
+        }
+    }
+}
+
+@Composable
+fun AddNewRecipe() {
+    Column {
+        var name by rememberSaveable { mutableStateOf("") }
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Name") },
+            singleLine = true
+        )
+        Row {
+            OutlinedTextField(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top = 0.dp, start = 10.dp),
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Method") },
+                singleLine = true
+            )
+            OutlinedTextField(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top = 0.dp, start = 10.dp, end = 10.dp),
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Ice") },
+                singleLine = true
+            )
+        }
+        Divider(modifier = Modifier.padding(top=20.dp, bottom = 20.dp))
+        Text(
+            modifier = Modifier.padding(start=10.dp),
+            text= "Ingredients")
+        Row {
+           OutlinedTextField(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top = 0.dp, start = 10.dp, end = 0.dp),
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("10") },
+                singleLine = true
+        )
+            OutlinedTextField(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top = 0.dp, start = 10.dp, end = 0.dp),
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("ml") },
+                singleLine = true
+            )
+            OutlinedTextField(
+                modifier = Modifier
+                    .weight(2f)
+                    .padding(top = 0.dp, start = 10.dp, end = 10.dp),
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Ingredient") },
+                singleLine = true
+            )
+        }
+
+    }
+}
+
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun ExposedDropdownMenuBoxExample() {
+//    var expanded by remember { mutableStateOf(true) }
+//    val items = listOf("Item 1", "Item 2", "Item 3")
+//    var selectedIndex by remember { mutableIntStateOf(0) }
+//
+//    ExposedDropdownMenuBox(
+//        expanded = expanded,
+//        onExpandedChange = { expanded = !expanded }
+//    ) {
+//        TextField(
+//            readOnly = true,
+//            value = items[selectedIndex],
+//            onValueChange = {},
+//            label = { Text("Label") },
+//            trailingIcon = {
+//                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+//            },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .clickable { expanded = !expanded }
+//        )
+//        DropdownMenu(
+//            expanded = expanded,
+//            onDismissRequest = { expanded = false }
+//        ) {
+//            items.forEachIndexed { index, item ->
+//                DropdownMenuItem(
+//                    onClick = {
+//                        selectedIndex = index
+//                        expanded = false
+//                  },
+//                    text = { Text(item) }
+//                )
+//            }
+//        }
+//    }
+//}
+
+@Composable
+fun AddNewIngredient() {
+
 }

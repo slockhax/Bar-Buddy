@@ -18,8 +18,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Block
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -53,7 +53,7 @@ object FilterSingleton {
     var craftable: Boolean = false
 }
 
-class YourViewModel() : ViewModel() {
+class YourViewModel : ViewModel() {
     private val dao: IngredientDao = Dao
     private val craftableInt = if (FilterSingleton.craftable) 1 else 0
     val recipesLiveData = MutableLiveData<List<Recipes>>().apply{
@@ -93,25 +93,26 @@ fun RecipesBodyContent(
     val recipesList by viewModel.recipesLiveData.observeAsState()
     Column {
         BuildFilterRow()
-
         LazyColumn {
             items(recipesList.orEmpty()) { recipe ->
                 var tags = recipe.method
-                recipe.descriptors?.let { tags += ", $it" }
+                if (recipe.descriptors.length > 1) {
+                     tags += ", ${recipe.descriptors}"
+                }
                 Divider()
                 RecipeListItem(
                     navController,
                     itemName = recipe.name,
                     tags = tags
                 )
-            }
+                }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BuildFilterChip(name: String, filters: List<String>? = null, viewModel: YourViewModel = viewModel()) {
+fun BuildFilterChip(name: String, filters: List<String>? = null) {
     var showDialog by remember { mutableStateOf(false) }
     var isSelected = false
     if (name == "Filters") { isSelected = (FilterSingleton.descriptor != "") }
@@ -135,6 +136,7 @@ fun BuildFilterChip(name: String, filters: List<String>? = null, viewModel: Your
     }
 }
 
+// TODO : think about changing to 'bottom sheet'?
 @Composable
 fun FilterPopup(
     name: String,
@@ -244,17 +246,16 @@ fun clickRecipe(navController: NavController, name:String){
 
 @Composable
 fun RecipeListItem(navController: NavController, itemName:String, tags: String){
-    val onClickAction = { clickRecipe(navController, itemName) }
     val inStock = Dao.getRecipeByName(itemName).craftable == 1
     ListItem(
-        modifier = Modifier.clickable(onClick = onClickAction),
+        modifier = Modifier.clickable(onClick = { clickRecipe(navController, itemName) }),
         headlineContent = { Text(itemName) },
         supportingContent = { Text(tags) },
         leadingContent = {
             Icon(
-                imageVector = if (inStock) Icons.Rounded.Check else Icons.Rounded.Close,
+                imageVector = if (inStock) Icons.Rounded.CheckCircle else Icons.Rounded.Block,
                 tint = if (inStock) Color.Green else Color.Red,
-                contentDescription = "test"
+                contentDescription = "In Stock Icon"
             )
         }
     )

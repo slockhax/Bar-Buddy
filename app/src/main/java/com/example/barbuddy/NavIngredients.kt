@@ -75,7 +75,7 @@ fun IngredientSection(title: String, items: List<CocktailIngredients>){
     Card(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top= 20.dp, bottom = 20.dp),
+            .padding(top = 20.dp, bottom = 20.dp),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
