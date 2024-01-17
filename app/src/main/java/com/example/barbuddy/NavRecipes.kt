@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.lifecycle.MutableLiveData
@@ -240,21 +241,17 @@ fun FilterPopup(
     }
 }
 
-fun clickRecipe(navController: NavController, name:String){
-    navController.navigate("recipeDetail/$name")
-}
-
 @Composable
 fun RecipeListItem(navController: NavController, itemName:String, tags: String){
     val inStock = Dao.getRecipeByName(itemName).craftable == 1
     ListItem(
-        modifier = Modifier.clickable(onClick = { clickRecipe(navController, itemName) }),
+        modifier = Modifier.clickable(onClick = { navController.navigate("recipeDetail/$itemName") }),
         headlineContent = { Text(itemName) },
         supportingContent = { Text(tags) },
         leadingContent = {
             Icon(
                 imageVector = if (inStock) Icons.Rounded.CheckCircle else Icons.Rounded.Block,
-                tint = if (inStock) Color.Green else Color.Red,
+                tint = if (inStock) colorResource(R.color.in_stock) else colorResource(R.color.out_of_stock),
                 contentDescription = "In Stock Icon"
             )
         }

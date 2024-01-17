@@ -8,13 +8,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Assignment
 import androidx.compose.material.icons.rounded.ListAlt
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +40,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -186,6 +193,7 @@ fun addNewItem(type: String?, navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNewRecipe() {
     Column {
@@ -231,7 +239,8 @@ fun AddNewRecipe() {
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("10") },
-                singleLine = true
+                singleLine = true,
+               keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
             OutlinedTextField(
                 modifier = Modifier
@@ -242,59 +251,52 @@ fun AddNewRecipe() {
                 label = { Text("ml") },
                 singleLine = true
             )
-            OutlinedTextField(
-                modifier = Modifier
-                    .weight(2f)
-                    .padding(top = 0.dp, start = 10.dp, end = 10.dp),
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Ingredient") },
-                singleLine = true
-            )
+            var isExpanded by remember { mutableStateOf(false) }
+            var dataValue by remember { mutableStateOf("")}
+            ExposedDropdownMenuBox(
+                modifier = Modifier.weight(2f),
+                expanded = isExpanded,
+                onExpandedChange = { isExpanded = !isExpanded }
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .padding(top = 0.dp, start = 10.dp, end = 10.dp)
+                        .menuAnchor(),
+                    value = dataValue,
+                    onValueChange = { },
+                    label = { Text("Ingredient") },
+                    readOnly = true,
+                    singleLine = true,
+                    trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)},
+                )
+                DropdownMenu(
+                    modifier = Modifier.exposedDropdownSize(true).padding(start=10.dp),
+                    expanded = isExpanded,
+                    onDismissRequest = {isExpanded = false},
+                    offset = DpOffset(x= 10.dp, y= 0.dp)
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Item 1") },
+                        onClick = {
+                            isExpanded = false
+                            dataValue = "Item 1"
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Item Two") },
+                        onClick = {
+                            isExpanded = false
+                            dataValue = "Item Two"
+                        }
+                    )
+                }
+            }
         }
-
     }
 }
 
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun ExposedDropdownMenuBoxExample() {
-//    var expanded by remember { mutableStateOf(true) }
-//    val items = listOf("Item 1", "Item 2", "Item 3")
-//    var selectedIndex by remember { mutableIntStateOf(0) }
-//
-//    ExposedDropdownMenuBox(
-//        expanded = expanded,
-//        onExpandedChange = { expanded = !expanded }
-//    ) {
-//        TextField(
-//            readOnly = true,
-//            value = items[selectedIndex],
-//            onValueChange = {},
-//            label = { Text("Label") },
-//            trailingIcon = {
-//                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-//            },
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .clickable { expanded = !expanded }
-//        )
-//        DropdownMenu(
-//            expanded = expanded,
-//            onDismissRequest = { expanded = false }
-//        ) {
-//            items.forEachIndexed { index, item ->
-//                DropdownMenuItem(
-//                    onClick = {
-//                        selectedIndex = index
-//                        expanded = false
-//                  },
-//                    text = { Text(item) }
-//                )
-//            }
-//        }
-//    }
-//}
+
+
 
 @Composable
 fun AddNewIngredient() {

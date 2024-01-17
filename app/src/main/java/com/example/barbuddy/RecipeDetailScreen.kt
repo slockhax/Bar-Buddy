@@ -7,6 +7,7 @@ import androidx.compose.material.icons.rounded.AcUnit
 import androidx.compose.material.icons.rounded.Blender
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Help
 import androidx.compose.material.icons.rounded.LocalBar
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material3.Icon
@@ -16,6 +17,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 
 val MethodOptions = mapOf(
@@ -117,17 +121,28 @@ fun BuildMethodItem(content: String){
 @Composable
 fun BuildIngredientItem(itemName: String, garnish: Boolean = false){
     var nameOnly = itemName
+    var inStock = "garnish"
     if (!garnish) {
         nameOnly = itemName.split(" ").drop(2).joinToString(" ")
+        inStock = Dao.getIngredientByName(nameOnly).available
     }
-    val inStock = Dao.getIngredientByName(nameOnly).available.toBoolean()
     ListItem (
         modifier = Modifier.padding(start = 20.dp),
         leadingContent = {
             Icon(
-                imageVector = if (inStock) Icons.Rounded.CheckCircle else Icons.Rounded.Block,
+                imageVector = when (inStock) {
+                    "garnish" -> ImageVector.vectorResource(R.drawable.rounded_nutrition_24)
+                    "true" -> Icons.Rounded.CheckCircle
+                    "false" -> Icons.Rounded.Block
+                    else -> Icons.Rounded.Help
+                },
                 contentDescription = null,
-                tint = if (inStock) Color.Green else Color.Red
+                tint = when (inStock) {
+                    "garnish" -> Color.Black
+                    "true" -> colorResource(R.color.in_stock)
+                    "false" -> colorResource(R.color.out_of_stock)
+                    else -> Color.Black
+                },
             )
         },
         headlineContent = {
