@@ -64,7 +64,7 @@ interface IngredientDao {
             "ORDER BY name COLLATE NOCASE")
     fun getGarnishes(): List<CocktailIngredients>
 
-    @Query("SELECT * FROM CocktailIngredients")
+    @Query("SELECT * FROM CocktailIngredients ORDER BY name COLLATE NOCASE")
     fun getAllIngredients(): List<CocktailIngredients>
 
     @Query("SELECT * FROM CocktailIngredients WHERE name = :name ")

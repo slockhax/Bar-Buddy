@@ -3,8 +3,10 @@ package com.example.barbuddy
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +23,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,13 +37,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
@@ -117,7 +120,7 @@ fun MainScaffold() {
                     colors = navColor
                 )
             }
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -183,7 +186,7 @@ fun BuildTopAppBar(navController: NavController) {
                 }
             },
             actions = {IconButton(onClick = { /*TODO*/ }) {
-                    Icon(Icons.Filled.Save,"Save Recipe Button")
+//                    Icon(Icons.Filled.Save,"Save Recipe Button")
             }}
         )
     } else {
@@ -199,6 +202,7 @@ fun BuildTopAppBar(navController: NavController) {
 }
 }
 
+
 fun addNewItem(type: String?, navController: NavController) {
     if (type != null) {
         when (type) {
@@ -208,9 +212,19 @@ fun addNewItem(type: String?, navController: NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNewRecipe() {
+    Box(modifier = Modifier.fillMaxSize())
+    {
+        ExtendedFloatingActionButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom=20.dp, end=15.dp),
+            onClick = { /*TODO*/ }) {
+            Icon(Icons.Filled.Save, "Save Button")
+            Text("  Save Recipe")
+        }
+    }
     Column {
         var name by rememberSaveable { mutableStateOf("") }
         OutlinedTextField(
@@ -247,78 +261,81 @@ fun AddNewRecipe() {
             modifier = Modifier.padding(start=10.dp),
             text= "Ingredients"
         )
-        for (i in 1..6) {
+        for (i in 1..2) {
             NewRecipeIngredientRow()
         }
     }
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewRecipeIngredientRow(){
     val ingredients = Dao.getAllIngredients()
     var name by remember { mutableStateOf("") }
-    Row {
+    Row (modifier = Modifier.padding(start=5.dp, end=5.dp)){
         OutlinedTextField(
             modifier = Modifier
                 .weight(1f)
-                .padding(top = 0.dp, start = 10.dp, end = 0.dp),
+                .padding(top = 0.dp, start = 5.dp, end = 5.dp),
             value = name,
             onValueChange = { name = it },
-            label = { Text("Volume") },
+            label = {  },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
+        NewItemDropDown(
+            listItems = listOf("ml","barspoons","dash"),
+            weight = 1f,
+            defaultValue = "ml")
+        NewItemDropDown(
+            listItems = ingredients.map{it.name},
+            weight = 2f,
+            defaultValue = "")
+        }
+    }
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RowScope.NewItemDropDown(listItems: List<String>, weight: Float, defaultValue: String) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var dataValue by remember { mutableStateOf(defaultValue) }
+    ExposedDropdownMenuBox(
+        modifier = Modifier.weight(weight),
+        expanded = isExpanded,
+        onExpandedChange = { isExpanded = !isExpanded }
+    ) {
         OutlinedTextField(
             modifier = Modifier
-                .weight(1f)
-                .padding(top = 0.dp, start = 10.dp, end = 0.dp),
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Measurement") },
-            singleLine = true
+                .padding(top = 0.dp, start = 5.dp, end = 5.dp)
+                .menuAnchor(),
+            value = dataValue,
+            onValueChange = { },
+            label = {  },
+            readOnly = true,
+            singleLine = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
         )
-        var isExpanded by remember { mutableStateOf(false) }
-        var dataValue by remember { mutableStateOf("")}
-        ExposedDropdownMenuBox(
-            modifier = Modifier.weight(2f),
+        DropdownMenu(
+            modifier = Modifier
+                .exposedDropdownSize(true)
+                .padding(start = 10.dp),
             expanded = isExpanded,
-            onExpandedChange = { isExpanded = !isExpanded }
+            onDismissRequest = { isExpanded = false },
+            offset = DpOffset(x = 5.dp, y = 0.dp)
         ) {
-            OutlinedTextField(
-                modifier = Modifier
-                    .padding(top = 0.dp, start = 10.dp, end = 10.dp)
-                    .menuAnchor(),
-                value = dataValue,
-                onValueChange = { },
-                label = { Text("Ingredient") },
-                readOnly = true,
-                singleLine = true,
-                trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)},
-            )
-            DropdownMenu(
-                modifier = Modifier
-                    .exposedDropdownSize(true)
-                    .padding(start = 10.dp),
-                expanded = isExpanded,
-                onDismissRequest = {isExpanded = false},
-                offset = DpOffset(x= 10.dp, y= 0.dp)
-            ) {
-                ingredients.forEach { item ->
-                    DropdownMenuItem(
-                        text = { Text(item.name) },
-                        onClick = {
-                            isExpanded = false
-                            dataValue = item.name
-                        },
-                    )
-                }
+            listItems.forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(item) },
+                    onClick = {
+                        isExpanded = false
+                        dataValue = item
+                    },
+                )
             }
         }
     }
 }
-
 
 
 @Composable
