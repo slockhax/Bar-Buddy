@@ -4,12 +4,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AcUnit
-import androidx.compose.material.icons.rounded.Blender
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Help
-import androidx.compose.material.icons.rounded.LocalBar
-import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -21,26 +18,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
-
-val MethodOptions = mapOf(
-    "Blended" to "Mix in a blender until smooth",
-    "Stirred" to "Mix item in serving glass",
-    "Shaken" to "Shake in cocktail shaker then pour into glass",
-)
-
-val IceOptions = mapOf(
-    "Strained" to "Strain out ice when pouring into glass",
-    "Over Ice" to "Serve with ice in glass",
-    "Blended Ice" to "Blend with ice",
-    "No Ice" to "No ice required",
-    "Hot Drink" to "No ice required"
-)
-
-val MethodIcon = mapOf(
-    "Blended" to Icons.Rounded.Blender,
-    "Shaken" to Icons.Rounded.Science,
-    "Stirred" to Icons.Rounded.LocalBar,
-)
 
 @Composable
 fun RecipeDetailScreen(name: String) {
@@ -97,7 +74,7 @@ fun BuildMethodItem(content: String){
         modifier = Modifier.padding(start = 20.dp),
         leadingContent = {
             Icon(
-                imageVector = MethodIcon[content]?: Icons.Rounded.AcUnit,
+                imageVector = CONST.MethodIcon[content]?: Icons.Rounded.AcUnit,
                 contentDescription = null
             )
         },
@@ -108,7 +85,7 @@ fun BuildMethodItem(content: String){
             )
         },
         supportingContent = {
-            (MethodOptions[content]?: IceOptions[content])?.let {
+            (CONST.MethodOptions[content]?: CONST.IceOptions[content])?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodyMedium
@@ -118,6 +95,7 @@ fun BuildMethodItem(content: String){
     )
 }
 
+@Suppress("VARIABLE_WITH_REDUNDANT_INITIALIZER")
 @Composable
 fun BuildIngredientItem(itemName: String, garnish: Boolean = false){
     var nameOnly = itemName
