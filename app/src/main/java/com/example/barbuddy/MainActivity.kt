@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.rounded.Assignment
 import androidx.compose.material.icons.rounded.ListAlt
 import androidx.compose.material3.Divider
@@ -33,6 +34,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -171,7 +173,7 @@ fun BuildTopAppBar(navController: NavController) {
                 }
             },
         )
-    } else {
+    } else if (currentRoute == "Add New Recipe"){
         TopAppBar(
             title = { Text(currentRoute.toString()) },
             colors = topAppColors,
@@ -180,8 +182,21 @@ fun BuildTopAppBar(navController: NavController) {
                     Icon(Icons.Filled.ArrowBack, contentDescription = "Back Button")
                 }
             },
+            actions = {IconButton(onClick = { /*TODO*/ }) {
+                    Icon(Icons.Filled.Save,"Save Recipe Button")
+            }}
         )
-    }
+    } else {
+    TopAppBar(
+        title = { Text(currentRoute.toString()) },
+        colors = topAppColors,
+        navigationIcon = {
+            IconButton(onClick = { navController.navigateUp() }) {
+                Icon(Icons.Filled.ArrowBack, contentDescription = "Back Button")
+            }
+        },
+    )
+}
 }
 
 fun addNewItem(type: String?, navController: NavController) {
@@ -230,71 +245,79 @@ fun AddNewRecipe() {
         Divider(modifier = Modifier.padding(top=20.dp, bottom = 20.dp))
         Text(
             modifier = Modifier.padding(start=10.dp),
-            text= "Ingredients")
-        Row {
-           OutlinedTextField(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(top = 0.dp, start = 10.dp, end = 0.dp),
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("10") },
-                singleLine = true,
-               keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            text= "Ingredients"
         )
+        for (i in 1..6) {
+            NewRecipeIngredientRow()
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NewRecipeIngredientRow(){
+    val ingredients = Dao.getAllIngredients()
+    var name by remember { mutableStateOf("") }
+    Row {
+        OutlinedTextField(
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 0.dp, start = 10.dp, end = 0.dp),
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Volume") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+        OutlinedTextField(
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 0.dp, start = 10.dp, end = 0.dp),
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Measurement") },
+            singleLine = true
+        )
+        var isExpanded by remember { mutableStateOf(false) }
+        var dataValue by remember { mutableStateOf("")}
+        ExposedDropdownMenuBox(
+            modifier = Modifier.weight(2f),
+            expanded = isExpanded,
+            onExpandedChange = { isExpanded = !isExpanded }
+        ) {
             OutlinedTextField(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(top = 0.dp, start = 10.dp, end = 0.dp),
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("ml") },
-                singleLine = true
+                    .padding(top = 0.dp, start = 10.dp, end = 10.dp)
+                    .menuAnchor(),
+                value = dataValue,
+                onValueChange = { },
+                label = { Text("Ingredient") },
+                readOnly = true,
+                singleLine = true,
+                trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)},
             )
-            var isExpanded by remember { mutableStateOf(false) }
-            var dataValue by remember { mutableStateOf("")}
-            ExposedDropdownMenuBox(
-                modifier = Modifier.weight(2f),
+            DropdownMenu(
+                modifier = Modifier
+                    .exposedDropdownSize(true)
+                    .padding(start = 10.dp),
                 expanded = isExpanded,
-                onExpandedChange = { isExpanded = !isExpanded }
+                onDismissRequest = {isExpanded = false},
+                offset = DpOffset(x= 10.dp, y= 0.dp)
             ) {
-                OutlinedTextField(
-                    modifier = Modifier
-                        .padding(top = 0.dp, start = 10.dp, end = 10.dp)
-                        .menuAnchor(),
-                    value = dataValue,
-                    onValueChange = { },
-                    label = { Text("Ingredient") },
-                    readOnly = true,
-                    singleLine = true,
-                    trailingIcon = {ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)},
-                )
-                DropdownMenu(
-                    modifier = Modifier.exposedDropdownSize(true).padding(start=10.dp),
-                    expanded = isExpanded,
-                    onDismissRequest = {isExpanded = false},
-                    offset = DpOffset(x= 10.dp, y= 0.dp)
-                ) {
+                ingredients.forEach { item ->
                     DropdownMenuItem(
-                        text = { Text("Item 1") },
+                        text = { Text(item.name) },
                         onClick = {
                             isExpanded = false
-                            dataValue = "Item 1"
+                            dataValue = item.name
                         },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Item Two") },
-                        onClick = {
-                            isExpanded = false
-                            dataValue = "Item Two"
-                        }
                     )
                 }
             }
         }
     }
 }
-
 
 
 
