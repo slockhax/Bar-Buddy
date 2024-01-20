@@ -3,6 +3,7 @@ package com.example.barbuddy
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material.icons.rounded.Assignment
 import androidx.compose.material.icons.rounded.ListAlt
 import androidx.compose.material3.Divider
@@ -39,12 +41,14 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -219,50 +223,54 @@ fun AddNewRecipe() {
         ExtendedFloatingActionButton(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom=20.dp, end=15.dp),
+                .padding(bottom = 20.dp, end = 15.dp),
             onClick = { /*TODO*/ }) {
             Icon(Icons.Filled.Save, "Save Button")
             Text("  Save Recipe")
         }
     }
     Column {
-        var name by rememberSaveable { mutableStateOf("") }
+        var recipeName by rememberSaveable { mutableStateOf("") }
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-            value = name,
-            onValueChange = { name = it },
+            value = recipeName,
+            onValueChange = { recipeName = it },
             label = { Text("Name") },
             singleLine = true
         )
-        Row {
-            OutlinedTextField(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(top = 0.dp, start = 10.dp),
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Method") },
-                singleLine = true
-            )
-            OutlinedTextField(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(top = 0.dp, start = 10.dp, end = 10.dp),
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Ice") },
-                singleLine = true
-            )
+        Row (modifier = Modifier.padding(start=5.dp, end=5.dp)) {
+            NewItemDropDown(
+                listItems = CONST.MethodOptions.keys.toList(),
+                weight = 1f,
+                defaultValue = "",
+                helper = "Method")
+            NewItemDropDown(
+                listItems = CONST.IceOptions.keys.toList(),
+                weight = 1f,
+                defaultValue = "",
+                helper = "Ice")
         }
         Divider(modifier = Modifier.padding(top=20.dp, bottom = 20.dp))
         Text(
             modifier = Modifier.padding(start=10.dp),
             text= "Ingredients"
         )
-        for (i in 1..2) {
+        val ingredientRows = remember { mutableStateListOf(*Array(3) {it}) }
+        ingredientRows.forEach { _ ->
             NewRecipeIngredientRow()
+        }
+
+        Box (modifier = Modifier.fillMaxWidth()) {
+            Icon(
+                Icons.Rounded.AddCircle,
+                modifier = Modifier
+                    .clickable { ingredientRows += 1 }
+                    .align(Alignment.CenterEnd)
+                    .padding(10.dp),
+                tint = colorResource(R.color.in_stock),
+                contentDescription = "Add new row")
         }
     }
 }
@@ -286,18 +294,20 @@ fun NewRecipeIngredientRow(){
         NewItemDropDown(
             listItems = listOf("ml","barspoons","dash"),
             weight = 1f,
-            defaultValue = "ml")
+            defaultValue = "ml",
+            helper="")
         NewItemDropDown(
             listItems = ingredients.map{it.name},
             weight = 2f,
-            defaultValue = "")
+            defaultValue = "",
+            helper = "Ingredient")
         }
     }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RowScope.NewItemDropDown(listItems: List<String>, weight: Float, defaultValue: String) {
+fun RowScope.NewItemDropDown(listItems: List<String>, weight: Float, defaultValue: String, helper: String) {
     var isExpanded by remember { mutableStateOf(false) }
     var dataValue by remember { mutableStateOf(defaultValue) }
     ExposedDropdownMenuBox(
@@ -311,7 +321,7 @@ fun RowScope.NewItemDropDown(listItems: List<String>, weight: Float, defaultValu
                 .menuAnchor(),
             value = dataValue,
             onValueChange = { },
-            label = {  },
+            label = { Text(helper) },
             readOnly = true,
             singleLine = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded) },
