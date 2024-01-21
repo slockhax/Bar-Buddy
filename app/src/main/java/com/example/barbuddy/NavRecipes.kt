@@ -116,7 +116,7 @@ fun BuildFilterChip(name: String, filters: List<String>? = null) {
     var isSelected = false
     if (name == "Filters") { isSelected = (FilterSingleton.descriptor != "") }
     if (name == "Ingredients") { isSelected = (FilterSingleton.ingredient != "") }
-    if (name == "Craftable Only") { isSelected = (FilterSingleton.craftable == 0) }
+    if (name == "Craftable Only") { isSelected = (FilterSingleton.craftable == 1) }
     FilterChip(
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.background,
