@@ -51,17 +51,16 @@ import androidx.navigation.NavController
 object FilterSingleton {
     var descriptor: String = ""
     var ingredient: String = ""
-    var craftable: Boolean = false
+    var craftable: Int = 0
 }
 
 class YourViewModel : ViewModel() {
     private val dao: IngredientDao = Dao
-    private val craftableInt = if (FilterSingleton.craftable) 1 else 0
     val recipesLiveData = MutableLiveData<List<Recipes>>().apply{
         value = dao.getFilteredRecipes(
             FilterSingleton.descriptor,
             FilterSingleton.ingredient,
-            craftableInt)
+            FilterSingleton.craftable)
     }
 
     fun updateFilter(filterType: String, newDescriptor: String) {
@@ -70,18 +69,17 @@ class YourViewModel : ViewModel() {
         val data = dao.getFilteredRecipes(
             FilterSingleton.descriptor,
             FilterSingleton.ingredient,
-            craftableInt)
+            FilterSingleton.craftable)
         recipesLiveData.postValue(data)
     }
 
     fun updateCraftable() {
-        FilterSingleton.craftable = !FilterSingleton.craftable
-        val craftableInt = if (FilterSingleton.craftable) 1 else 0
+        FilterSingleton.craftable = if (FilterSingleton.craftable == 1) 0 else 1
 
         val data = dao.getFilteredRecipes(
             FilterSingleton.descriptor,
             FilterSingleton.ingredient,
-            craftableInt)
+            FilterSingleton.craftable)
         recipesLiveData.postValue(data)
     }
 }
@@ -118,7 +116,7 @@ fun BuildFilterChip(name: String, filters: List<String>? = null) {
     var isSelected = false
     if (name == "Filters") { isSelected = (FilterSingleton.descriptor != "") }
     if (name == "Ingredients") { isSelected = (FilterSingleton.ingredient != "") }
-    if (name == "Craftable Only") { isSelected = FilterSingleton.craftable }
+    if (name == "Craftable Only") { isSelected = (FilterSingleton.craftable == 0) }
     FilterChip(
         colors = FilterChipDefaults.filterChipColors(
             containerColor = MaterialTheme.colorScheme.background,
