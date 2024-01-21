@@ -1,6 +1,7 @@
 package com.example.barbuddy
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.outlined.Casino
 import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material.icons.rounded.Assignment
 import androidx.compose.material.icons.rounded.ListAlt
@@ -62,10 +64,11 @@ import com.example.compose.AppTheme
 val Dao = DatabaseProvider.db.IngredientDao()
 
 class MainActivity : ComponentActivity() {
-    override fun onDestroy(){
+    override fun onDestroy() {
         DatabaseProvider.db.close()
         super.onDestroy()
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -81,47 +84,40 @@ class MainActivity : ComponentActivity() {
 fun MainScaffold() {
 
     val navController = rememberNavController()
-    val navColor = NavigationBarItemDefaults.colors(
+    val navBarColors = NavigationBarItemDefaults.colors(
         selectedIconColor = MaterialTheme.colorScheme.primaryContainer,
         selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        unselectedIconColor =MaterialTheme.colorScheme.onSurface,
+        unselectedIconColor = MaterialTheme.colorScheme.onSurface,
         unselectedTextColor = MaterialTheme.colorScheme.onSurface,
         indicatorColor = MaterialTheme.colorScheme.primary,
     )
 
-    Scaffold (
+    Scaffold(
         topBar = { BuildTopAppBar(navController) },
         bottomBar = {
+            // TODO : (bug) back button doesn't update nav bar selection
             var selectedNavItem by remember { mutableIntStateOf(0) }
-            NavigationBar (
+            NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
                 contentColor = MaterialTheme.colorScheme.onSurface
-            ){
-                NavigationBarItem(
-                    selected = selectedNavItem == 0,
-                    onClick = {
-                        navController.navigate("Recipes")
-                        selectedNavItem = 0
-                    },
-                    label = { Text("Recipes") },
-                    icon = {
-                        Icon(Icons.Rounded.Assignment,
-                            contentDescription = "test image")
-                    },
-                    colors = navColor
+            ) {
+                NavigationBarItem(selected = selectedNavItem == 0, onClick = {
+                    navController.navigate("Recipes")
+                    selectedNavItem = 0
+                }, label = { Text("Recipes") }, icon = {
+                    Icon(
+                        Icons.Rounded.Assignment, contentDescription = "test image"
+                    )
+                }, colors = navBarColors
                 )
-                NavigationBarItem(
-                    selected = selectedNavItem == 1,
-                    onClick = {
-                        navController.navigate("Ingredients")
-                        selectedNavItem = 1
-                    },
-                    label = { Text("Ingredients") },
-                    icon = { Icon(
-                        Icons.Rounded.ListAlt,
-                        contentDescription = "test image")
-                    },
-                    colors = navColor
+                NavigationBarItem(selected = selectedNavItem == 1, onClick = {
+                    navController.navigate("Ingredients")
+                    selectedNavItem = 1
+                }, label = { Text("Ingredients") }, icon = {
+                    Icon(
+                        Icons.Rounded.ListAlt, contentDescription = "test image"
+                    )
+                }, colors = navBarColors
                 )
             }
         },
@@ -134,15 +130,16 @@ fun MainScaffold() {
                     bottom = paddingValues.calculateBottomPadding()
                 )
         ) {
-            NavHost(navController = navController, startDestination = "Recipes"){
+            NavHost(navController = navController, startDestination = "Recipes") {
                 composable("Ingredients") { IngredientsBodyContent() }
                 composable("Recipes") { RecipesBodyContent(navController) }
+                composable("I'm Feeling Lucky") { RandomBodyContent(navController) }
+                composable("Add New Recipe") { AddNewRecipe() }
+                composable("Add New Ingredient") { AddNewIngredient() }
                 composable("recipeDetail/{recipeName}") { backStackEntry ->
                     backStackEntry.arguments?.getString("recipeName")
                         ?.let { RecipeDetailScreen(it) }
                 }
-                composable("Add New Recipe") { AddNewRecipe() }
-                composable("Add New Ingredient") { AddNewIngredient() }
             }
         }
     }
@@ -160,19 +157,22 @@ fun BuildTopAppBar(navController: NavController) {
         titleContentColor = MaterialTheme.colorScheme.onSurface,
         actionIconContentColor = MaterialTheme.colorScheme.onSurface,
     )
-    if (currentRoute == "Ingredients" || currentRoute == "Recipes") {
-        TopAppBar(
+    when (currentRoute) {
+        "Ingredients", "Recipes" -> TopAppBar(
             title = { Text("Home Bar Buddy") },
             colors = topAppColors,
             actions = {
-                IconButton(onClick = { addNewItem(currentRoute, navController) }) {
-                    Icon(Icons.Filled.Add,"Add new item")
+                IconButton(onClick = { navController.navigate("I'm Feeling Lucky") }) {
+                    Icon(Icons.Outlined.Casino, "I'm Feeling Lucky")
                 }
-            }
-        )
-    } else if (recipeName != null){
-        TopAppBar(
-            title = { Text(recipeName) },
+                IconButton(onClick = { addNewItem(currentRoute, navController) }) {
+                    Icon(Icons.Filled.Add, "Add new item")
+                }
+            })
+        "recipeDetail/{recipeName}" -> TopAppBar(
+            title = {
+                if (recipeName != null) { Text(recipeName) }
+            },
             colors = topAppColors,
             navigationIcon = {
                 IconButton(onClick = { navController.navigateUp() }) {
@@ -180,33 +180,29 @@ fun BuildTopAppBar(navController: NavController) {
                 }
             },
         )
-    } else if (currentRoute == "Add New Recipe"){
-        TopAppBar(
+        "Add New Recipe" -> TopAppBar(
             title = { Text(currentRoute.toString()) },
             colors = topAppColors,
             navigationIcon = {
                 IconButton(onClick = { navController.navigateUp() }) {
                     Icon(Icons.Filled.ArrowBack, contentDescription = "Back Button")
                 }
-            },
-            actions = {IconButton(onClick = { /*TODO*/ }) {
-//                    Icon(Icons.Filled.Save,"Save Recipe Button")
-            }}
-        )
-    } else {
-    TopAppBar(
-        title = { Text(currentRoute.toString()) },
-        colors = topAppColors,
-        navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back Button")
             }
-        },
-    )
-}
+        )
+        else -> TopAppBar(
+//            title = { Text(currentRoute.toString()) },
+            title = { Text("else") },
+            colors = topAppColors,
+            navigationIcon = {
+                IconButton(onClick = { navController.navigateUp() }) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back Button")
+                }
+            },
+        )
+    }
 }
 
-
+// TODO : move new item into separate file
 fun addNewItem(type: String?, navController: NavController) {
     if (type != null) {
         when (type) {
@@ -216,15 +212,26 @@ fun addNewItem(type: String?, navController: NavController) {
     }
 }
 
+fun saveRecipe(data: List<CONST.RecipeIngredientRow>){
+    Log.e("FAB","Start")
+    data.forEach { item ->
+        Log.e("FAB", item.toString())
+    }
+    Log.e("FAB","End")
+}
 @Composable
 fun AddNewRecipe() {
-    Box(modifier = Modifier.fillMaxSize())
-    {
-        ExtendedFloatingActionButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 20.dp, end = 15.dp),
-            onClick = { /*TODO*/ }) {
+    val ingredientRows = remember {mutableStateListOf(
+        CONST.RecipeIngredientRow("","",""),
+        CONST.RecipeIngredientRow("","","")
+    )}
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ExtendedFloatingActionButton(modifier = Modifier
+            .align(Alignment.BottomEnd)
+            .padding(bottom = 20.dp, end = 15.dp),
+            onClick = { saveRecipe(ingredientRows) }
+        ) {
             Icon(Icons.Filled.Save, "Save Button")
             Text("  Save Recipe")
         }
@@ -240,33 +247,38 @@ fun AddNewRecipe() {
             label = { Text("Name") },
             singleLine = true
         )
-        Row (modifier = Modifier.padding(start=5.dp, end=5.dp)) {
+        Row(modifier = Modifier.padding(start = 5.dp, end = 5.dp)) {
             NewItemDropDown(
                 listItems = CONST.MethodOptions.keys.toList(),
+                dataValue = "",
+                onValueChange = {},
                 weight = 1f,
                 defaultValue = "",
-                helper = "Method")
+                helper = "Method"
+            )
             NewItemDropDown(
                 listItems = CONST.IceOptions.keys.toList(),
+                dataValue = "",
+                onValueChange = {},
                 weight = 1f,
                 defaultValue = "",
-                helper = "Ice")
+                helper = "Ice"
+            )
         }
-        Divider(modifier = Modifier.padding(top=20.dp, bottom = 20.dp))
+        Divider(modifier = Modifier.padding(top = 20.dp, bottom = 20.dp))
         Text(
-            modifier = Modifier.padding(start=10.dp),
-            text= "Ingredients"
+            modifier = Modifier.padding(start = 10.dp), text = "Ingredients"
         )
-        val ingredientRows = remember { mutableStateListOf(*Array(3) {it}) }
-        ingredientRows.forEach { _ ->
-            NewRecipeIngredientRow()
+
+        ingredientRows.forEach { data ->
+            NewRecipeIngredientRow(data)
         }
 
-        Box (modifier = Modifier.fillMaxWidth()) {
-            Icon(
-                Icons.Rounded.AddCircle,
+        // TODO : move button so it doesn't interfere with FAB
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Rounded.AddCircle,
                 modifier = Modifier
-                    .clickable { ingredientRows += 1 }
+                    .clickable { ingredientRows += CONST.RecipeIngredientRow("","","") }
                     .align(Alignment.CenterEnd)
                     .padding(10.dp),
                 tint = colorResource(R.color.in_stock),
@@ -277,50 +289,63 @@ fun AddNewRecipe() {
 
 
 @Composable
-fun NewRecipeIngredientRow(){
+fun NewRecipeIngredientRow(data: CONST.RecipeIngredientRow) {
     val ingredients = Dao.getAllIngredients()
-    var name by remember { mutableStateOf("") }
-    Row (modifier = Modifier.padding(start=5.dp, end=5.dp)){
+    var volume by remember { mutableStateOf(data.volume) }
+    var measurement by remember { mutableStateOf(data.measurement) }
+    var ingredientName by remember { mutableStateOf(data.item) }
+
+    Row(modifier = Modifier.padding(start = 5.dp, end = 5.dp)) {
         OutlinedTextField(
             modifier = Modifier
                 .weight(1f)
                 .padding(top = 0.dp, start = 5.dp, end = 5.dp),
-            value = name,
-            onValueChange = { name = it },
-            label = {  },
+            value = volume,
+            onValueChange = { volume = it },
+            label = { },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
         NewItemDropDown(
-            listItems = listOf("ml","barspoons","dash"),
+            listItems = listOf("ml", "barspoons", "dash"),
+            dataValue = measurement,
+            onValueChange = {measurement = it},
             weight = 1f,
             defaultValue = "ml",
-            helper="")
+            helper = ""
+        )
         NewItemDropDown(
-            listItems = ingredients.map{it.name},
+            listItems = ingredients.map { it.name },
+            dataValue = ingredientName,
+            onValueChange = {ingredientName = it},
             weight = 2f,
             defaultValue = "",
-            helper = "Ingredient")
-        }
+            helper = "Ingredient"
+        )
     }
+}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RowScope.NewItemDropDown(listItems: List<String>, weight: Float, defaultValue: String, helper: String) {
+fun RowScope.NewItemDropDown(
+    listItems: List<String>,
+    dataValue: String,
+    onValueChange: (String) -> Unit,
+    weight: Float,
+    defaultValue: String,
+    helper: String
+) {
     var isExpanded by remember { mutableStateOf(false) }
-    var dataValue by remember { mutableStateOf(defaultValue) }
-    ExposedDropdownMenuBox(
-        modifier = Modifier.weight(weight),
+    ExposedDropdownMenuBox(modifier = Modifier.weight(weight),
         expanded = isExpanded,
-        onExpandedChange = { isExpanded = !isExpanded }
-    ) {
+        onExpandedChange = { isExpanded = !isExpanded }) {
         OutlinedTextField(
             modifier = Modifier
                 .padding(top = 0.dp, start = 5.dp, end = 5.dp)
                 .menuAnchor(),
             value = dataValue,
-            onValueChange = { },
+            onValueChange = onValueChange,
             label = { Text(helper) },
             readOnly = true,
             singleLine = true,
@@ -339,7 +364,7 @@ fun RowScope.NewItemDropDown(listItems: List<String>, weight: Float, defaultValu
                     text = { Text(item) },
                     onClick = {
                         isExpanded = false
-                        dataValue = item
+                        onValueChange(item)
                     },
                 )
             }

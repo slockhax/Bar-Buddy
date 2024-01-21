@@ -27,4 +27,10 @@ object CONST {
         "Stirred" to Icons.Rounded.LocalBar,
     )
 
+    data class RecipeIngredientRow(
+        var volume: String,
+        var measurement: String,
+        var item: String
+    )
 }
+
