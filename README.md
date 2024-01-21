@@ -24,3 +24,14 @@ The app is a learning experience myself and currently is not complete. The core 
 | Feature: allow for substitute items                        |             | 
 | Feature: custom tags on recipes (favorites/holidays/etc)   |             |
 | Fully pre fill recipe database                             |             |
+
+## Screenshots
+
+### Recipes Page
+![Recipes Page Screenshot](./README/RecipesScreen.png)
+### Ingredients Page
+![Ingredients Page Screenshot](./README/IngredientsScreen.png)
+### Recipe Detail Page
+![Recipe Detail Page Screenshot](./README/RecipeDetailScreen.png)
+### Add New Recipe Page
+![New Recipe Page Screenshot](./README/NewRecipeScreen.png)
